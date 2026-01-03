@@ -3,7 +3,7 @@
     "id": "kemeny-fagy-egzotik",
     "name": "Fagyvédelem (Egzotikusok)",
     "type": "alert",
-    "trigger": { "temp_min": -10 },
+    "trigger": { "temp_min": 15 },
     "plants": ["Datolyaszilva (Diospyros kaki)", "Közönséges füge (Ficus carica)"],
     "message": "Kritikus hideg! Takard be a datolyaszilvát és a fügét!"
   },
@@ -24,3 +24,4 @@
     "message": "Ideális idő a gyümölcsfák lemosó permetezéséhez!"
   }
 ]
+
