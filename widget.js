@@ -40,11 +40,10 @@
     document.head.appendChild(style);
 
     try {
-        // JSON szabályok betöltése
         const rulesRes = await fetch('https://raw.githubusercontent.com/amezitlabaskert-lab/smart-events/main/blog-scripts.json');
         const rules = await rulesRes.json();
         
-        // Időjárás adatok - napi (daily) lebontásban a 0-7 cm-es talajhővel
+        // Napi adatok lekérése a 0-7 cm-es talajhővel (ami a 6 cm-es mélységnek felel meg)
         const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=47.5136&longitude=19.3735&daily=temperature_2m_min,wind_speed_10m_max,precipitation_sum,soil_temperature_0_to_7cm&timezone=auto`);
         const weather = await weatherRes.json();
 
@@ -55,7 +54,6 @@
             let activeWindows = [];
             let currentWindow = null;
 
-            // 7 napos előrejelzés átfésülése
             for (let i = 0; i < 7; i++) {
                 const date = new Date();
                 date.setDate(date.getDate() + i);
@@ -68,7 +66,7 @@
                 let isDayOk = false;
                 const cond = rule.conditions || {};
 
-                // 1. Szezon ellenőrzése
+                // Szezon ellenőrzése
                 const isS = (rule.seasons || []).some(s => {
                     const [sM, sD] = s.start.split('-').map(Number);
                     const [eM, eD] = s.end.split('-').map(Number);
@@ -80,24 +78,26 @@
                 if (isS) {
                     isDayOk = true;
 
-                    // 2. Talajhő ellenőrzése (Fűkarbantartáshoz)
+                    // TALAJHŐ TARTÓSSÁG: Mai + holnapi napnak is el kell érnie a küszöböt
                     if (cond.soil_temp_above !== undefined) {
-                        if (daySoil < cond.soil_temp_above) isDayOk = false;
+                        const nextDaySoil = weather.daily.soil_temperature_0_to_7cm[i + 1] || daySoil;
+                        if (daySoil < cond.soil_temp_above || nextDaySoil < cond.soil_temp_above) {
+                            isDayOk = false;
+                        }
                     }
 
-                    // 3. Levegőhő: Megfontolt fagyvédelem (Metszéshez: ne legyen fagy a következő 3 napban)
+                    // METSZÉS BIZTONSÁG: 3 napos fagymentes ablak
                     if (cond.temp_above !== undefined) {
                         const futureTemps = weather.daily.temperature_2m_min.slice(i, i + 3);
                         if (!futureTemps.every(t => t >= cond.temp_above)) isDayOk = false;
                     }
 
-                    // 4. Maximum és minimum korlátok
+                    // Egyéb alapfeltételek
                     if (cond.temp_below !== undefined && dayMin > cond.temp_below) isDayOk = false;
                     if (cond.rain_max !== undefined && dayRain > cond.rain_max) isDayOk = false;
                     if (cond.wind_max !== undefined && dayWind > cond.wind_max) isDayOk = false;
                 }
 
-                // Ablakok összevonása (ha több egymást követő nap is alkalmas)
                 if (isDayOk) {
                     if (!currentWindow) { currentWindow = { start: date, end: date }; }
                     else { currentWindow.end = date; }
@@ -108,7 +108,6 @@
             }
             if (currentWindow) activeWindows.push(currentWindow);
 
-            // Megjelenítés
             activeWindows.forEach(win => {
                 const dateStr = win.start.toLocaleDateString('hu-HU', {month:'short', day:'numeric'}) + 
                                 (win.start.getTime() !== win.end.getTime() ? ' - ' + win.end.toLocaleDateString('hu-HU', {month:'short', day:'numeric'}) : '');
@@ -123,7 +122,6 @@
             });
         });
 
-        // Ha nincs semmi aktív szabály
         widgetDiv.innerHTML = htmlContent || '<p style="text-align:center; opacity:0.6; padding:20px;">Jelenleg nincs aktuális kerti teendő.</p>';
         
     } catch (e) {
