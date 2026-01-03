@@ -1,19 +1,26 @@
 [
   {
-    "id": "kemeny-fagy",
-    "name": "Kritikus fagy",
+    "id": "kemeny-fagy-egzotik",
+    "name": "Fagyvédelem (Egzotikusok)",
     "type": "alert",
     "trigger": { "temp_min": -10 },
-    "plants": ["Közönséges füge (Ficus carica)", "Leander (Nerium oleander)"],
-    "message": "Kritikus hideg! Takard be a töveket!"
+    "plants": ["Datolyaszilva (Diospyros kaki)", "Közönséges füge (Ficus carica)"],
+    "message": "Kritikus hideg! Takard be a datolyaszilvát és a fügét!"
   },
   {
-    "id": "lemoso",
+    "id": "lemoso-permetezes",
     "name": "Lemosó permetezés",
     "type": "window",
     "season": { "start": "02-15", "end": "03-31" },
     "conditions": { "temp_min": 5, "wind_max": 12, "rain_max": 0 },
-    "plants": ["Közönséges alma (Malus domestica)", "Közönséges kajszi (Prunus armeniaca)"],
-    "message": "Ideális permetezési ablak!"
+    "plants": [
+      "Közönséges alma (Malus domestica)", 
+      "Cseresznye (Prunus avium)", 
+      "Közönséges kajszi (Prunus armeniaca)",
+      "Nektarin (Prunus persica var. nucipersica)",
+      "Japánszilva (Prunus salicina)",
+      "Házi szilva (Prunus domestica)"
+    ],
+    "message": "Ideális idő a gyümölcsfák lemosó permetezéséhez!"
   }
 ]
