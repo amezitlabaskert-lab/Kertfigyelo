@@ -18,11 +18,12 @@
     "id": "eros-fagy-riado",
     "name": "❄️ Erős fagyok várhatók",
     "type": "alert",
-    "trigger": { "temp_min": 12 },
+    "trigger": { "temp_min": -12 },
     "plants": [
       "Datolyaszilva (Diospyros kaki)", 
       "Közönséges füge (Ficus carica)",
-      "Európai ciprus (Cupressus sempervirens)"
+      "Európai ciprus (Cupressus sempervirens)",
+      "Kínai selyemmirtusz (Lagerstroemia indica)"
     ],
     "message": "Erős fagyok jönnek, fagyvédelem szükséges!"
   },
@@ -41,5 +42,30 @@
       "Házi szilva (Prunus domestica)"
     ],
     "message": "Ideális idő lemosó permetezéshez."
+  },
+  {
+    "id": "tafrina-riado",
+    "name": "🍄 Tafrina-veszély",
+    "type": "window",
+    "season": { "start": "03-01", "end": "04-15" },
+    "conditions": { "temp_min": 4, "rain_min": 1 },
+    "plants": [
+      "Nektarin (Prunus persica var. nucipersica)",
+      "Közönséges őszibarack (Prunus persica)"
+    ],
+    "message": "Hűvös, csapadékos idő: Tafrina fertőzés veszélye! Védekezés szükséges a rügypattanás után."
+  },
+  {
+    "id": "monilia-riado",
+    "name": "🍄 Monília-veszély",
+    "type": "window",
+    "season": { "start": "03-15", "end": "04-30" },
+    "conditions": { "temp_min": 5, "rain_min": 1 },
+    "plants": [
+      "Közönséges kajszi (Prunus armeniaca)",
+      "Meggy (Prunus cerasus)",
+      "Japánszilva (Prunus salicina)"
+    ],
+    "message": "Csapadékos idő virágzáskor: Monília-fertőzés veszélye! Figyelj a virágfertőző moníliára."
   }
 ]
