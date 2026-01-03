@@ -99,7 +99,7 @@
                 const dateStr = win.start.toLocaleDateString('hu-HU', {month:'short', day:'numeric'}) + 
                                 (win.start.getTime() !== win.end.getTime() ? ' - ' + win.end.toLocaleDateString('hu-HU', {month:'short', day:'numeric'}) : '');
                 
-                const fagyInfo = (rule.type === 'alert') ? ` (< ${rule.trigger.temp_min}°C)` : '';
+                const fagyInfo = (rule.type === 'alert') ? (${rule.trigger.temp_min}°C) : '';
 
                 htmlContent += `
                     <div class="garden-card ${rule.type}">
@@ -114,4 +114,5 @@
         widgetDiv.innerHTML = htmlContent;
     } catch (e) { console.error(e); }
 })();
+
 
