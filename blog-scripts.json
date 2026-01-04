@@ -3,7 +3,7 @@
   "id": "mersekelt-fagy",
   "name": "❄️ Mérsékelt fagy várható",
   "type": "alert",
-  "conditions": { "temp_below": -5 },
+  "conditions": { "temp_below": 0 },
   "seasons": [{ "start": "11-01", "end": "03-31" }],
   "plants": [
     "Közönséges füge (Ficus carica)",
@@ -91,4 +91,5 @@
     "message": "A tartós meleg kedvez a díszbogarak rajzásának. Ebben az időszakban javasolt az érintett növények megfigyelése."
   }
 ]
+
 
