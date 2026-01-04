@@ -6,6 +6,28 @@
     fontLink.rel = 'stylesheet';
     document.head.appendChild(fontLink);
 
+    // 1️⃣ BIZTONSÁGOS TÁROLÓ WRAPPER (Safari/Firefox fallback)
+    function safeLocalStorage() {
+        try {
+            const test = '__storage_test__';
+            localStorage.setItem(test, test);
+            localStorage.removeItem(test);
+            return {
+                getItem: (k) => localStorage.getItem(k),
+                setItem: (k, v) => localStorage.setItem(k, v),
+                removeItem: (k) => localStorage.removeItem(k)
+            };
+        } catch(e) {
+            const store = {}; // In-memory fallback
+            return {
+                getItem: (k) => store[k] || null,
+                setItem: (k, v) => { store[k] = v; },
+                removeItem: (k) => { delete store[k]; }
+            };
+        }
+    }
+    const storage = safeLocalStorage();
+
     function isInSeason(date, startStr, endStr) {
         const [sM, sD] = startStr.split('-').map(Number);
         const [eM, eD] = endStr.split('-').map(Number);
@@ -27,7 +49,8 @@
         const dayMin = weather.daily.temperature_2m_min[i];
         const dayWind = weather.daily.wind_speed_10m_max[i] || 0;
         const dayRain = weather.daily.precipitation_sum[i] || 0;
-        const daySoil = weather.daily.soil_temperature_0_to_7cm ? weather.daily.soil_temperature_0_to_7cm[i] : null;
+        // API JAVÍTÁS UTÁNI PARAMÉTER: soil_temperature_6cm
+        const daySoil = weather.daily.soil_temperature_6cm ? weather.daily.soil_temperature_6cm[i] : null;
 
         const seasons = rule.seasons || (rule.season ? [rule.season] : null);
         if (seasons && !seasons.some(s => isInSeason(date, s.start, s.end))) return false;
@@ -45,7 +68,7 @@
 
         if (cond.soil_temp_stable !== undefined) {
             if (i > FORECAST_DAYS - 2) return false;
-            const nextDaySoil = weather.daily.soil_temperature_0_to_7cm[i + 1];
+            const nextDaySoil = weather.daily.soil_temperature_6cm[i + 1];
             if (daySoil < cond.soil_temp_stable || nextDaySoil < cond.soil_temp_stable) return false;
         }
 
@@ -56,58 +79,49 @@
         return true;
     }
 
-    // HELYSZÍN KEZELÉS JAVÍTÁSA (Golyóálló megoldás)
     window.activateLocalWeather = () => navigator.geolocation.getCurrentPosition(p => {
-        try {
-            localStorage.setItem('garden-lat', p.coords.latitude);
-            localStorage.setItem('garden-lon', p.coords.longitude);
-            location.reload();
-        } catch (e) {
-            // Ha a localStorage tiltott (Tracking Prevention), URL-be tesszük a koordinátákat
-            const newUrl = new URL(window.location.href);
-            newUrl.searchParams.set('lat', p.coords.latitude);
-            newUrl.searchParams.set('lon', p.coords.longitude);
-            window.location.href = newUrl.href;
-        }
+        storage.setItem('garden-lat', p.coords.latitude);
+        storage.setItem('garden-lon', p.coords.longitude);
+        // Ha a storage in-memory, az URL-be is betesszük a biztonság kedvéért
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.set('lat', p.coords.latitude);
+        newUrl.searchParams.set('lon', p.coords.longitude);
+        window.location.href = newUrl.href;
     });
 
     window.resetLocation = () => { 
-        try { localStorage.removeItem('garden-lat'); localStorage.removeItem('garden-lon'); } catch(e) {}
+        storage.removeItem('garden-lat');
+        storage.removeItem('garden-lon');
         const newUrl = new URL(window.location.href);
         newUrl.searchParams.delete('lat');
         newUrl.searchParams.delete('lon');
-        window.location.href = newUrl.origin + newUrl.pathname; 
+        window.location.href = newUrl.origin + newUrl.pathname;
     };
 
     try {
-        // Alapértelmezett anonim koordináták (Isaszeg környéke)
         let lat = 47.5136;
         let lon = 19.3735;
         let isPersonalized = false;
 
-        // 1. Prioritás: URL paraméterek (ha a localStorage tiltott)
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('lat') && urlParams.has('lon')) {
             lat = urlParams.get('lat');
             lon = urlParams.get('lon');
             isPersonalized = true;
-        } 
-        // 2. Prioritás: LocalStorage (ha elérhető és van benne adat)
-        else {
-            try {
-                const sLat = localStorage.getItem('garden-lat');
-                const sLon = localStorage.getItem('garden-lon');
-                if (sLat && sLon) {
-                    lat = sLat;
-                    lon = sLon;
-                    isPersonalized = true;
-                }
-            } catch(e) { console.warn("Helyi tároló blokkolva."); }
+        } else {
+            const sLat = storage.getItem('garden-lat');
+            const sLon = storage.getItem('garden-lon');
+            if (sLat && sLon) {
+                lat = sLat;
+                lon = sLon;
+                isPersonalized = true;
+            }
         }
 
+        // 2️⃣ API JAVÍTÁS: soil_temperature_6cm használata a daily listában
         const [rulesRes, weatherRes] = await Promise.all([
             fetch('https://raw.githubusercontent.com/amezitlabaskert-lab/smart-events/main/blog-scripts.json'),
-            fetch(`https://api.open-meteo.com/v1/forecast?latitude=${Number(lat)}&longitude=${Number(lon)}&daily=temperature_2m_min,wind_speed_10m_max,precipitation_sum,soil_temperature_0_to_7cm&timezone=auto`)
+            fetch(`https://api.open-meteo.com/v1/forecast?latitude=${Number(lat).toFixed(4)}&longitude=${Number(lon).toFixed(4)}&daily=temperature_2m_min,wind_speed_10m_max,precipitation_sum,soil_temperature_6cm&timezone=auto`)
         ]);
 
         const rules = await rulesRes.json();
@@ -117,7 +131,7 @@
 
         let htmlHeader = `
             <div style="background: #f8fafc; padding: 18px; border-radius: 14px; border: 1px solid #e2e8f0; position: relative; font-family: 'Plus Jakarta Sans', sans-serif; margin-bottom: 15px;">
-                <div style="position: absolute; top: 0; right: 0; background: #fef3c7; color: #92400e; font-size: 0.65rem; font-weight: 800; padding: 4px 12px; border-bottom-left-radius: 10px; text-transform: uppercase;">Tesztüzem v1.8</div>
+                <div style="position: absolute; top: 0; right: 0; background: #fef3c7; color: #92400e; font-size: 0.65rem; font-weight: 800; padding: 4px 12px; border-bottom-left-radius: 10px; text-transform: uppercase;">Tesztüzem v1.9</div>
                 <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap;">
                     <div style="flex: 1;">
                         <span style="font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 6px;">
@@ -163,10 +177,7 @@
             }
 
             if (typeClass === 'window' && windows.length > 1) {
-                htmlCards += `
-                    <div style="margin-bottom:10px; padding:12px 16px; background:#f0fdf4; border-radius:12px; border-left:4px solid #22c55e; color:#15803d; font-size:0.9rem; font-weight:600; font-family: 'Plus Jakarta Sans', sans-serif;">
-                        📅 ${windows.length} alkalmas időszak: ${esc(rule.name)}
-                    </div>`;
+                htmlCards += `<div style="margin-bottom:10px; padding:12px 16px; background:#f0fdf4; border-radius:12px; border-left:4px solid #22c55e; color:#15803d; font-size:0.9rem; font-weight:600; font-family: 'Plus Jakarta Sans', sans-serif;">📅 ${windows.length} alkalmas időszak: ${esc(rule.name)}</div>`;
             }
 
             windows.forEach(w => {
@@ -183,8 +194,7 @@
             });
         });
 
-        const fallbackContent = `<p style="text-align:center; padding:30px; color:#94a3b8; font-size: 0.9rem; font-style: italic;">Jelenleg nincs aktív kerti teendő.</p>`;
-        widgetDiv.innerHTML = htmlHeader + (hasActiveCards ? htmlCards : fallbackContent);
+        widgetDiv.innerHTML = htmlHeader + (hasActiveCards ? htmlCards : `<p style="text-align:center; padding:30px; color:#94a3b8; font-size: 0.9rem; font-style: italic;">Jelenleg nincs aktív kerti teendő.</p>`);
 
     } catch (e) { console.error("Widget hiba:", e); }
 })();
