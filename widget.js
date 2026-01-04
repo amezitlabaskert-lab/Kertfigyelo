@@ -7,7 +7,6 @@
         /* Minimális padding: 10px fönn, 20px oldalt, 10px lenn */
         .garden-main-card { background: #ffffff !important; padding: 10px 20px; margin-bottom: 20px !important; box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.5) !important; }
         
-        /* Cím feletti üres rész törölve (margin-top: 0) */
         .garden-title { font-family: 'Dancing Script', cursive !important; font-size: 3.6em !important; text-align: center !important; margin: 0 0 10px 0 !important; line-height: 1.1; }
         
         .section-title { 
@@ -18,7 +17,6 @@
             border-bottom: 1px solid rgba(0,0,0,0.05);
         }
         
-        /* Carousel magassága a szöveghez igazítva, kevesebb alsó margó */
         .carousel-wrapper { position: relative; min-height: 95px; margin-bottom: 5px; overflow: hidden; }
         .carousel-item { 
             position: absolute; top: 0; left: 0; width: 100%; opacity: 0; visibility: hidden; 
@@ -36,13 +34,11 @@
         .card-type-none { background: #94a3b8 !important; }
         
         .event-name { font-family: 'Plus Jakarta Sans', sans-serif !important; font-weight: 800 !important; font-size: 16px !important; margin-bottom: 1px; }
-        .event-range { font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 9px; font-weight: 700; margin-bottom: 3px; text-transform: uppercase; }
-        .event-msg { font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 12px; line-height: 1.4; }
+        .event-range { font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 12px; font-weight: 700; margin-bottom: 3px; text-transform: uppercase; }
+        .event-msg { font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 15px; line-height: 1.4; }
         
-        /* Footer: nulla margó fönn, csak kicsi padding */
         .garden-footer { text-align: center; font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 9px; margin-top: 5px; padding: 5px 0; line-height: 1.2; border-top: 1px solid rgba(0,0,0,0.05); }
         
-        /* GOMB: Szögletes és sűrűbb */
         .loc-btn { width: 100%; cursor: pointer; padding: 8px; font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 10px; margin-bottom: 10px; text-transform: uppercase; font-weight: 800; border: none; outline: none; }
     `;
     document.head.appendChild(styleSheet);
@@ -129,7 +125,7 @@
                 <div class="garden-main-card">
                     <div class="garden-title">${isPers ? 'Kertfigyelőd' : 'Kertfigyelő'}</div>
                     <button onclick="window.gardenAction()" class="loc-btn">
-                        ${isPers ? 'VISSZA AZ ALAPHOZ' : 'SAJÁT KERTFIGYELŐT SZERETNÉM'}
+                        ${isPers ? 'VISSZA AZ ALAPHOZ' : 'SAJÁT KERTFIGYELŐT SZERETNÉK!'}
                     </button>
                     <div class="section-title">Riasztások</div>
                     ${renderZone(results.filter(r => r.type === 'alert'), { range: 'Jelenleg', title: 'Minden nyugi', msg: 'Nincs veszély.', type: 'none' }, 'alert')}
@@ -161,3 +157,4 @@
     }
     init();
 })();
+
