@@ -13,7 +13,7 @@
         #smart-garden-widget { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             color: #334155; 
-            max-width: 320px; 
+            max-width: 300px; 
             margin: 20px auto; 
             text-align: left;
         }
@@ -233,3 +233,4 @@
     }
     init();
 })();
+
