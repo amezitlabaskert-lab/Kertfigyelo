@@ -166,7 +166,7 @@
             widgetDiv.innerHTML = `
                 <div class="garden-main-card">
                     <div class="garden-title">${isPers ? 'Kertfigyelőd' : 'Kertfigyelő'}</div>
-                    <button id="locBtn" class="loc-btn">${isPers ? 'Vissza az alaphoz' : 'Saját kertfigyelőt szeretnék'}</button>
+                    <button id="locBtn" class="loc-btn">${isPers ? 'Vissza az alaphoz' : 'Saját kertfigyelőt szeretnék!'}</button>
                     <div class="section-title">Riasztások</div>
                     ${renderZone(results.filter(r => r.type === 'alert'), getSeasonalFallback('alert'), 'alert')}
                     ${results.some(r => r.type === 'window') ? '<div class="section-title">Lehetőségek</div>' : ''}
@@ -207,5 +207,6 @@
     }
     init();
 })();
+
 
 
