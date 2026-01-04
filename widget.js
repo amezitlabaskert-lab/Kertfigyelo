@@ -6,6 +6,20 @@
     fontLink.rel = 'stylesheet';
     document.head.appendChild(fontLink);
 
+    // Animációs stílusok hozzáadása
+    const styleSheet = document.createElement("style");
+    styleSheet.textContent = `
+        @keyframes gardenPulse {
+            0% { box-shadow: 0 0 0 0 rgba(52, 96, 128, 0.4); background-color: #346080; }
+            50% { box-shadow: 0 0 0 10px rgba(52, 96, 128, 0); background-color: #437ba3; }
+            100% { box-shadow: 0 0 0 0 rgba(52, 96, 128, 0); background-color: #346080; }
+        }
+        .garden-btn-animate {
+            animation: gardenPulse 3s infinite ease-in-out;
+        }
+    `;
+    document.head.appendChild(styleSheet);
+
     function safeLocalStorage() {
         try {
             const test = '__storage_test__';
@@ -119,7 +133,7 @@
                 const d = new Date(weather.daily.time[i]);
                 if (checkDay(rule, weather, d, i)) {
                     const label = rule.type === 'alert' ? 'RIASZTÁSOK' : 'TEENDŐK';
-                    const color = rule.type === 'alert' ? '#346080' : (rule.type === 'window' ? '#6691b3' : '#475569');
+                    const color = rule.type === 'alert' ? '#b91c1c' : (rule.type === 'window' ? '#15803d' : '#6691b3');
                     alerts.push({ dStr: label, title: rule.name, msg: rule.message, color, type: rule.type });
                     break;
                 }
@@ -132,27 +146,32 @@
         const infoFallback = [{ dStr: "TEENDŐK", title: "🌿 Pihenj!", msg: "Nincs sürgős kerti munka, élvezd a Mezítlábas Kertedet.", color: "#6691b3" }];
         const timeStr = lastUpdate.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' });
 
+        const isMobile = window.innerWidth < 1250;
+        const sidebarStyle = isMobile 
+            ? "position: relative; width: 100%; margin: 20px 0; z-index: 999; display: block;" 
+            : "position: fixed; left: 0px; top: 220px; width: 300px; z-index: 9999; display: block;";
+
         widgetDiv.innerHTML = `
-            <div style="position: fixed; left: 0px; top: 220px; width: 300px; z-index: 9999; font-family: 'Plus Jakarta Sans', sans-serif; display: none;" id="garden-floating-sidebar">
-                <div style="background: #ffffff; padding: 25px; box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.5); border-radius: 0px;">
+            <div style="${sidebarStyle} font-family: 'Plus Jakarta Sans', sans-serif;" id="garden-floating-sidebar">
+                <div style="background: #ffffff; padding: 25px; box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.5); border-radius: 0px; border: 1px solid #f1f5f9;">
                     <div style="text-align: center; border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 15px; margin-bottom: 20px;">
                         <div class="garden-widget-title" style="font-family: 'Dancing Script', cursive; font-size: 3.6em; font-weight: 700; margin: 15px 0; line-height: 1; color: #346080;">
                             ${isPersonalized ? 'Kertfigyelőd' : 'Kertfigyelő'}
                         </div>
-                        <button onclick="${isPersonalized ? 'resetLocation()' : 'activateLocalWeather()'}" style="background: ${isPersonalized ? 'transparent' : '#346080'}; border: 1px solid #346080; border-radius: 0px; padding: 10px 14px; font-size: 10px; font-weight: 800; cursor: pointer; color: ${isPersonalized ? '#346080' : 'white'}; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.3s;">
-                            ${isPersonalized ? '↩️ VISSZA AZ ALAPHOZ' : '📍 A saját kertem Kertfigyelőjét szeretném!'}
+                        <button onclick="${isPersonalized ? 'resetLocation()' : 'activateLocalWeather()'}" 
+                                class="${isPersonalized ? '' : 'garden-btn-animate'}"
+                                style="background: ${isPersonalized ? 'transparent' : '#346080'}; border: 1px solid #346080; border-radius: 0px; padding: 12px 14px; font-size: 10px; font-weight: 800; cursor: pointer; color: ${isPersonalized ? '#346080' : 'white'}; text-transform: uppercase; letter-spacing: 1px; transition: all 0.5s; width: 100%;">
+                            ${isPersonalized ? 'VISSZA AZ ALAPHOZ' : 'A SAJÁT KERTEM KERTFIGYELŐJÉT SZERETNÉM'}
                         </button>
                     </div>
                     <div id="alert-zone" style="height: 135px; overflow: hidden;"></div>
                     <div style="height: 25px;"></div>
                     <div id="info-zone" style="height: 135px; overflow: hidden;"></div>
                     <div style="font-size: 8px; color: #6691b3; text-transform: uppercase; letter-spacing: 1px; margin-top: 15px; text-align: center; line-height: 1.6;">
-                        v3.2.3 • Frissítve: ${timeStr}<br>Winter Skin Edition
+                        v3.2.6 • Frissítve: ${timeStr}<br>Winter Skin Edition
                     </div>
                 </div>
             </div>`;
-
-        if (window.innerWidth > 1250) document.getElementById('garden-floating-sidebar').style.display = 'block';
 
         const startCarousel = (id, items) => {
             const container = document.getElementById(id);
