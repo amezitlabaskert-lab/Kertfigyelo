@@ -79,6 +79,16 @@
     "message": "Erős fagyok várhatók (-10°C)! Ellenőrizd az érzékenyebb növények takarását!"
   },
   {
+    "id": "tartos-nappali-zord-fagy",
+    "name": "🥶 Zord nappali fagy",
+    "type": "alert",
+    "conditions": { 
+      "temp_above": -5,
+      "days_min": 1 
+    },
+    "message": "A hőmérséklet napközben sem emelkedik -5°C fölé."
+  },
+  {
     "id": "lemoso-permetezes",
     "name": "💦 Lemosó permetezés",
     "type": "window",
