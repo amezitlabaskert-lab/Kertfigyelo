@@ -4,58 +4,36 @@
     const styleSheet = document.createElement("style");
     styleSheet.textContent = `
         #smart-garden-widget { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            color: #334155; 
             width: 300px; 
-            margin: 10px auto;
-            display: inline-block;
+            margin: 0;
+            padding: 0;
             text-align: left;
-            /* Nem kényszerítünk betűtípust, örökli a blogét */
         }
         .garden-main-card { 
-            padding: 15px; 
-            border: 1px solid transparent; /* A blog CSS-ed adhat neki keretet */
-            border-radius: 12px; 
+            background: #ffffff; 
+            padding: 25px; 
+            border: 1px solid #f1f5f9; 
+            border-radius: 0; /* LEKEREKÍTÉS TÖRÖLVE */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
         .garden-title { 
             font-size: 28px; 
             text-align: center; 
-            margin-bottom: 15px;
-            /* Szín és súly törölve, a Winter Skin CSS-ed irányítja */
+            margin-bottom: 20px;
+            color: #6691b3; 
         }
-        .section-title { 
-            font-size: 11px; 
-            font-weight: 800; 
-            letter-spacing: 1.5px; 
-            margin-bottom: 12px; 
-            text-transform: uppercase; 
-            border-bottom: 1px solid rgba(128,128,128,0.2); 
-            padding-bottom: 5px; 
-        }
-        /* Csak a típusjelző vonalak maradnak színesek a felismerhetőség miatt */
+        .section-title { font-size: 11px; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 12px; text-transform: uppercase; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; }
         .alert-header { color: #b91c1c; }
         .info-header { color: #6691b3; margin-top: 25px; }
-        
-        .card-container { position: relative; padding-left: 18px; margin-bottom: 15px; min-height: 80px; }
-        .card-line { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; border-radius: 2px; }
-        
+        .card-container { position: relative; padding-left: 18px; margin-bottom: 15px; min-height: 85px; }
+        .card-line { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; border-radius: 0; /* LEKEREKÍTÉS TÖRÖLVE */ }
         .event-name { font-size: 16px; font-weight: 800; margin-bottom: 2px; }
-        .event-range { font-size: 9px; font-weight: 700; opacity: 0.6; margin-bottom: 6px; text-transform: uppercase; }
+        .event-range { font-size: 9px; font-weight: 700; opacity: 0.7; margin-bottom: 6px; text-transform: uppercase; }
         .event-msg { font-size: 12px; line-height: 1.5; }
-        
-        .garden-footer { text-align: center; font-size: 9px; opacity: 0.5; margin-top: 15px; padding-top: 10px; border-top: 1px solid rgba(128,128,128,0.2); line-height: 1.6; }
-        
-        .loc-btn { 
-            border: 1px solid currentColor; 
-            background: none; 
-            color: inherit;
-            padding: 8px; 
-            font-size: 9px; 
-            font-weight: 800; 
-            cursor: pointer; 
-            width: 100%; 
-            margin-bottom: 15px; 
-            border-radius: 4px;
-            opacity: 0.8;
-        }
+        .garden-footer { text-align: center; font-size: 9px; opacity: 0.5; margin-top: 20px; padding-top: 10px; border-top: 1px solid #f1f5f9; line-height: 1.6; }
+        .loc-btn { width: 100%; cursor: pointer; padding: 10px; font-size: 10px; border-radius: 0; /* LEKEREKÍTÉS TÖRÖLVE */ background: none; border: 1px solid #6691b3; color: #6691b3; margin-bottom: 20px; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade { animation: fadeIn 0.5s ease-out forwards; }
     `;
@@ -123,7 +101,7 @@
 
     async function init() {
         const widgetDiv = document.getElementById('smart-garden-widget');
-        if (!widgetDiv) { setTimeout(init, 100); return; }
+        if (!widgetDiv) return;
 
         try {
             let lat = 47.5136, lon = 19.3735, isPersonalized = false;
@@ -199,16 +177,16 @@
                 <div class="garden-main-card">
                     <div class="garden-title">Kertfigyelő</div>
                     <button onclick="window.gardenAction()" class="loc-btn">
-                        ${isPersonalized ? 'VISSZA AZ ALAPHOZ' : 'SAJÁT KERTEM FIGYELÉSE'}
+                        ${isPersonalized ? 'VISSZA AZ ALAPHOZ' : 'SAJÁT KERTFIGYELŐT SZERETNÉK!'}
                     </button>
                     <div class="section-title alert-header">Riasztások</div>
                     ${renderZone(alerts, { range: 'Jelenleg', title: 'Minden nyugi', msg: 'Nincs veszély a láthatáron.', color: '#346080' }, 'alert')}
                     <div class="section-title info-header">Teendők</div>
                     ${renderZone(infos, { range: 'MA', title: 'Pihenj!', msg: 'Élvezd a Mezítlábas Kertedet.', color: '#6691b3' }, 'info')}
                     <div class="garden-footer">
-                        Frissítve: ${lastUpdate.toLocaleTimeString('hu-HU', {hour:'2-digit', minute:'2-digit'})}<br>
+                        Last updated: ${lastUpdate.toLocaleTimeString('hu-HU', {hour:'2-digit', minute:'2-digit'})}<br>
                         Winter Skin Edition<br>
-                        v3.4.7
+                        v3.4.10
                     </div>
                 </div>`;
 
