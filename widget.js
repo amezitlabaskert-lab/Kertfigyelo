@@ -43,7 +43,6 @@
         const rulesRes = await fetch('https://raw.githubusercontent.com/amezitlabaskert-lab/smart-events/main/blog-scripts.json');
         const rules = await rulesRes.json();
         
-        // Napi adatok lekérése a 0-7 cm-es talajhővel (ami a 6 cm-es mélységnek felel meg)
         const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=47.5136&longitude=19.3735&daily=temperature_2m_min,wind_speed_10m_max,precipitation_sum,soil_temperature_0_to_7cm&timezone=auto`);
         const weather = await weatherRes.json();
 
@@ -66,44 +65,50 @@
                 let isDayOk = false;
                 const cond = rule.conditions || {};
 
-                // Szezon ellenőrzése
-                const isS = (rule.seasons || []).some(s => {
-                    const [sM, sD] = s.start.split('-').map(Number);
-                    const [eM, eD] = s.end.split('-').map(Number);
-                    const start = new Date(date.getFullYear(), sM-1, sD);
-                    const end = new Date(date.getFullYear(), eM-1, eD);
-                    return date >= start && date <= end;
-                });
+                // JAVÍTOTT SZEZON ELLENŐRZÉS (Évforduló kezeléssel és alapértelmezett aktivitással)
+                let isS = true; 
+                if (rule.seasons && rule.seasons.length > 0) {
+                    isS = rule.seasons.some(s => {
+                        const [sM, sD] = s.start.split('-').map(Number);
+                        const [eM, eD] = s.end.split('-').map(Number);
+                        let start = new Date(date.getFullYear(), sM - 1, sD);
+                        let end = new Date(date.getFullYear(), eM - 1, eD);
+                        
+                        // Ha a vége dátum korábbi, mint a kezdő, akkor átnyúlik a következő évre
+                        if (end < start) {
+                            if (date < start) start.setFullYear(start.getFullYear() - 1);
+                            else end.setFullYear(end.getFullYear() + 1);
+                        }
+                        return date >= start && date <= end;
+                    });
+                }
 
                 if (isS) {
                     isDayOk = true;
 
-                    // TALAJHŐ TARTÓSSÁG: Mai + holnapi napnak is el kell érnie a küszöböt
+                    // TALAJHŐ STABILITÁS
                     if (cond.soil_temp_above !== undefined) {
                         const nextDaySoil = weather.daily.soil_temperature_0_to_7cm[i + 1] || daySoil;
-                        if (daySoil < cond.soil_temp_above || nextDaySoil < cond.soil_temp_above) {
-                            isDayOk = false;
-                        }
+                        if (daySoil < cond.soil_temp_above || nextDaySoil < cond.soil_temp_above) isDayOk = false;
                     }
 
-                    // METSZÉS BIZTONSÁG: 3 napos fagymentes ablak
+                    // METSZÉS BIZTONSÁG (3 NAP)
                     if (cond.temp_above !== undefined) {
                         const futureTemps = weather.daily.temperature_2m_min.slice(i, i + 3);
                         if (!futureTemps.every(t => t >= cond.temp_above)) isDayOk = false;
                     }
 
-                    // Egyéb alapfeltételek
                     if (cond.temp_below !== undefined && dayMin > cond.temp_below) isDayOk = false;
                     if (cond.rain_max !== undefined && dayRain > cond.rain_max) isDayOk = false;
                     if (cond.wind_max !== undefined && dayWind > cond.wind_max) isDayOk = false;
                 }
 
                 if (isDayOk) {
-                    if (!currentWindow) { currentWindow = { start: date, end: date }; }
-                    else { currentWindow.end = date; }
-                } else if (currentWindow) { 
-                    activeWindows.push(currentWindow); 
-                    currentWindow = null; 
+                    if (!currentWindow) currentWindow = { start: new Date(date), end: new Date(date) };
+                    else currentWindow.end = new Date(date);
+                } else if (currentWindow) {
+                    activeWindows.push(currentWindow);
+                    currentWindow = null;
                 }
             }
             if (currentWindow) activeWindows.push(currentWindow);
