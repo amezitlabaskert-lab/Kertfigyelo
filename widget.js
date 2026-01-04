@@ -6,7 +6,6 @@
     fontLink.rel = 'stylesheet';
     document.head.appendChild(fontLink);
 
-    // 1️⃣ BIZTONSÁGOS TÁROLÓ WRAPPER (Safari/Firefox fallback)
     function safeLocalStorage() {
         try {
             const test = '__storage_test__';
@@ -18,7 +17,7 @@
                 removeItem: (k) => localStorage.removeItem(k)
             };
         } catch(e) {
-            const store = {}; // In-memory fallback
+            const store = {};
             return {
                 getItem: (k) => store[k] || null,
                 setItem: (k, v) => { store[k] = v; },
@@ -49,8 +48,6 @@
         const dayMin = weather.daily.temperature_2m_min[i];
         const dayWind = weather.daily.wind_speed_10m_max[i] || 0;
         const dayRain = weather.daily.precipitation_sum[i] || 0;
-        // API JAVÍTÁS UTÁNI PARAMÉTER: soil_temperature_6cm
-        const daySoil = weather.daily.soil_temperature_6cm ? weather.daily.soil_temperature_6cm[i] : null;
 
         const seasons = rule.seasons || (rule.season ? [rule.season] : null);
         if (seasons && !seasons.some(s => isInSeason(date, s.start, s.end))) return false;
@@ -66,10 +63,11 @@
             if (futureTemps.length < 3 || !futureTemps.every(t => t >= cond.temp_above_sustained)) return false;
         }
 
+        // TALAJHŐ HELYETT LEVEGŐ MINIMUMMAL SZÁMOLUNK (Biztonsági fallback)
         if (cond.soil_temp_stable !== undefined) {
             if (i > FORECAST_DAYS - 2) return false;
-            const nextDaySoil = weather.daily.soil_temperature_6cm[i + 1];
-            if (daySoil < cond.soil_temp_stable || nextDaySoil < cond.soil_temp_stable) return false;
+            const nextDayMin = weather.daily.temperature_2m_min[i + 1];
+            if (dayMin < cond.soil_temp_stable || nextDayMin < cond.soil_temp_stable) return false;
         }
 
         if (cond.rain_max !== undefined && dayRain > cond.rain_max) return false;
@@ -82,7 +80,6 @@
     window.activateLocalWeather = () => navigator.geolocation.getCurrentPosition(p => {
         storage.setItem('garden-lat', p.coords.latitude);
         storage.setItem('garden-lon', p.coords.longitude);
-        // Ha a storage in-memory, az URL-be is betesszük a biztonság kedvéért
         const newUrl = new URL(window.location.href);
         newUrl.searchParams.set('lat', p.coords.latitude);
         newUrl.searchParams.set('lon', p.coords.longitude);
@@ -111,17 +108,13 @@
         } else {
             const sLat = storage.getItem('garden-lat');
             const sLon = storage.getItem('garden-lon');
-            if (sLat && sLon) {
-                lat = sLat;
-                lon = sLon;
-                isPersonalized = true;
-            }
+            if (sLat && sLon) { lat = sLat; lon = sLon; isPersonalized = true; }
         }
 
-        // 2️⃣ API JAVÍTÁS: soil_temperature_6cm használata a daily listában
+        // API HÍVÁS: Csak a stabil napi paraméterekkel
         const [rulesRes, weatherRes] = await Promise.all([
             fetch('https://raw.githubusercontent.com/amezitlabaskert-lab/smart-events/main/blog-scripts.json'),
-            fetch(`https://api.open-meteo.com/v1/forecast?latitude=${Number(lat).toFixed(4)}&longitude=${Number(lon).toFixed(4)}&daily=temperature_2m_min,wind_speed_10m_max,precipitation_sum,soil_temperature_6cm&timezone=auto`)
+            fetch(`https://api.open-meteo.com/v1/forecast?latitude=${Number(lat).toFixed(4)}&longitude=${Number(lon).toFixed(4)}&daily=temperature_2m_min,wind_speed_10m_max,precipitation_sum&timezone=auto`)
         ]);
 
         const rules = await rulesRes.json();
@@ -131,7 +124,7 @@
 
         let htmlHeader = `
             <div style="background: #f8fafc; padding: 18px; border-radius: 14px; border: 1px solid #e2e8f0; position: relative; font-family: 'Plus Jakarta Sans', sans-serif; margin-bottom: 15px;">
-                <div style="position: absolute; top: 0; right: 0; background: #fef3c7; color: #92400e; font-size: 0.65rem; font-weight: 800; padding: 4px 12px; border-bottom-left-radius: 10px; text-transform: uppercase;">Tesztüzem v1.9</div>
+                <div style="position: absolute; top: 0; right: 0; background: #fef3c7; color: #92400e; font-size: 0.65rem; font-weight: 800; padding: 4px 12px; border-bottom-left-radius: 10px; text-transform: uppercase;">v1.9.1</div>
                 <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap;">
                     <div style="flex: 1;">
                         <span style="font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 6px;">
@@ -176,15 +169,10 @@
                 if (current) windows.push(current);
             }
 
-            if (typeClass === 'window' && windows.length > 1) {
-                htmlCards += `<div style="margin-bottom:10px; padding:12px 16px; background:#f0fdf4; border-radius:12px; border-left:4px solid #22c55e; color:#15803d; font-size:0.9rem; font-weight:600; font-family: 'Plus Jakarta Sans', sans-serif;">📅 ${windows.length} alkalmas időszak: ${esc(rule.name)}</div>`;
-            }
-
             windows.forEach(w => {
                 hasActiveCards = true;
                 const dStr = w.s.toLocaleDateString('hu-HU', {month:'short', day:'numeric'}) + (w.s.getTime() !== w.e.getTime() ? ' - ' + w.e.toLocaleDateString('hu-HU', {month:'short', day:'numeric'}) : '');
                 const bg = typeClass === 'alert' ? 'linear-gradient(135deg, #1e3a8a, #3b82f6)' : typeClass === 'window' ? 'linear-gradient(135deg, #15803d, #22c55e)' : 'linear-gradient(135deg, #0369a1, #0ea5e9)';
-                
                 htmlCards += `
                     <div class="garden-card ${typeClass}" style="margin-bottom:15px; padding:20px; border-radius:16px; color:white; border-left: 8px solid rgba(255,255,255,0.3); background: ${bg}; font-family: 'Plus Jakarta Sans', sans-serif;">
                         <strong style="display:block; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">${esc(dStr)}: ${esc(rule.name)}</strong>
