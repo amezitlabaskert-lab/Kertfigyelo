@@ -4,18 +4,22 @@
     const styleSheet = document.createElement("style");
     styleSheet.textContent = `
         #smart-garden-widget { width: 300px; text-align: left; }
-        .garden-main-card { background: #ffffff !important; padding: 15px 25px; margin-bottom: 20px !important; box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.5) !important; }
-        .garden-title { font-family: 'Dancing Script', cursive !important; font-size: 3.2em !important; text-align: center !important; margin: 5px 0 10px 0 !important; line-height: 1.1; }
+        /* Minimális padding: 10px fönn, 20px oldalt, 10px lenn */
+        .garden-main-card { background: #ffffff !important; padding: 10px 20px; margin-bottom: 20px !important; box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.5) !important; }
+        
+        /* Cím feletti üres rész törölve (margin-top: 0) */
+        .garden-title { font-family: 'Dancing Script', cursive !important; font-size: 3.6em !important; text-align: center !important; margin: 0 0 10px 0 !important; line-height: 1.1; }
         
         .section-title { 
             font-family: 'Plus Jakarta Sans', sans-serif !important;
-            font-weight: 800 !important; font-size: 14px !important; 
+            font-weight: 800 !important; font-size: 16px !important; 
             text-transform: uppercase; letter-spacing: 1.5px; 
-            margin-bottom: 8px; padding-bottom: 3px; 
+            margin-bottom: 5px; padding-bottom: 2px; 
             border-bottom: 1px solid rgba(0,0,0,0.05);
         }
         
-        .carousel-wrapper { position: relative; min-height: 90px; margin-bottom: 5px; overflow: hidden; }
+        /* Carousel magassága a szöveghez igazítva, kevesebb alsó margó */
+        .carousel-wrapper { position: relative; min-height: 95px; margin-bottom: 5px; overflow: hidden; }
         .carousel-item { 
             position: absolute; top: 0; left: 0; width: 100%; opacity: 0; visibility: hidden; 
             transition: opacity 1.2s ease-in-out, transform 1.2s ease-in-out; 
@@ -23,7 +27,7 @@
         }
         .carousel-item.active { opacity: 1; visibility: visible; transform: translateY(0); }
 
-        .card-container { position: relative; padding-left: 15px; min-height: 80px; }
+        .card-container { position: relative; padding-left: 15px; min-height: 85px; }
         .card-line { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
         
         .card-type-alert { background: #b91c1c !important; }
@@ -31,13 +35,15 @@
         .card-type-info { background: #6691b3 !important; }
         .card-type-none { background: #94a3b8 !important; }
         
-        .event-name { font-family: 'Plus Jakarta Sans', sans-serif !important; font-weight: 800 !important; font-size: 15px !important; margin-bottom: 2px; }
-        .event-range { font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 9px; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; }
+        .event-name { font-family: 'Plus Jakarta Sans', sans-serif !important; font-weight: 800 !important; font-size: 16px !important; margin-bottom: 1px; }
+        .event-range { font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 9px; font-weight: 700; margin-bottom: 3px; text-transform: uppercase; }
         .event-msg { font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 12px; line-height: 1.4; }
         
-        .garden-footer { text-align: center; font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 9px; margin-top: 10px; padding-top: 5px; line-height: 1.3; border-top: 1px solid rgba(0,0,0,0.05); }
+        /* Footer: nulla margó fönn, csak kicsi padding */
+        .garden-footer { text-align: center; font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 9px; margin-top: 5px; padding: 5px 0; line-height: 1.2; border-top: 1px solid rgba(0,0,0,0.05); }
         
-        .loc-btn { width: 100%; cursor: pointer; padding: 10px; font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 10px; margin-bottom: 15px; text-transform: uppercase; font-weight: 800; border: none; outline: none; }
+        /* GOMB: Szögletes és sűrűbb */
+        .loc-btn { width: 100%; cursor: pointer; padding: 8px; font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 10px; margin-bottom: 10px; text-transform: uppercase; font-weight: 800; border: none; outline: none; }
     `;
     document.head.appendChild(styleSheet);
 
@@ -123,15 +129,15 @@
                 <div class="garden-main-card">
                     <div class="garden-title">${isPers ? 'Kertfigyelőd' : 'Kertfigyelő'}</div>
                     <button onclick="window.gardenAction()" class="loc-btn">
-                        ${isPers ? 'VISSZA AZ ALAPHOZ' : 'SAJÁT KERTFIGYELŐT SZERETNÉK'}
+                        ${isPers ? 'VISSZA AZ ALAPHOZ' : 'SAJÁT KERTFIGYELŐT SZERETNÉM'}
                     </button>
                     <div class="section-title">Riasztások</div>
                     ${renderZone(results.filter(r => r.type === 'alert'), { range: 'Jelenleg', title: 'Minden nyugi', msg: 'Nincs veszély.', type: 'none' }, 'alert')}
-                    ${results.some(r => r.type === 'window') ? '<div class="section-title" style="margin-top:15px">Lehetőségek</div>' : ''}
+                    ${results.some(r => r.type === 'window') ? '<div class="section-title" style="margin-top:10px">Lehetőségek</div>' : ''}
                     ${renderZone(results.filter(r => r.type === 'window'), null, 'window')}
-                    <div class="section-title" style="margin-top:15px">Teendők</div>
+                    <div class="section-title" style="margin-top:10px">Teendők</div>
                     ${renderZone(results.filter(r => r.type !== 'alert' && r.type !== 'window'), { range: 'MA', title: 'Pihenj!', msg: 'Élvezd a kertet.', type: 'none' }, 'info')}
-                    <div class="garden-footer">Last updated: ${lastUpdate.toLocaleTimeString('hu-HU', {hour:'2-digit', minute:'2-digit'})}<br>Winter Skin Edition - v3.5.5</div>
+                    <div class="garden-footer">Last updated: ${lastUpdate.toLocaleTimeString('hu-HU', {hour:'2-digit', minute:'2-digit'})}<br>Winter Skin Edition - v3.5.6</div>
                 </div>`;
 
             window.gardenAction = () => {
