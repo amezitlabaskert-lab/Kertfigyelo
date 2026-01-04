@@ -11,7 +11,7 @@
 },
   {
     "id": "extrem-hoseg",
-    "name": "🔥 Extrém Hőség",
+    "name": "🌡️ Extrém Hőség",
     "type": "alert",
     "seasons": [{ "start": "06-01", "end": "08-31" }],
     "conditions": { "temp_above": 35 },
@@ -59,9 +59,9 @@
     "id": "mersekelt-fagy",
     "name": "❄️ Mérsékelt fagy",
     "type": "alert",
-    "conditions": { "temp_below": 0 },
+    "conditions": { "temp_below": -5 },
     "seasons": [{ "start": "11-01", "end": "03-31" }],
-    "message": "A hőmérséklet fagypont alá süllyed. Érdemes ellenőrizni a fiatal növények takarását és az örökzöldek állapotát!"
+    "message": "Beköszöntött a csípős idő! Éjszaka -5°C köré hűl a levegő. Érdemes ellenőrizni a fiatal növények takarását és az örökzöldek állapotát!"
   },
   {
     "id": "eros-fagy-riado",
@@ -133,5 +133,6 @@
     "message": "A díszbogarak rajzásának kezdete mostanában várható. Figyeld a borókákat, tujákat és Leyland-ciprusokat!"
   }
 ]
+
 
 
