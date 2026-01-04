@@ -1,53 +1,61 @@
 (async function() {
     const esc = str => String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]));
     
-    if (!document.querySelector('link[href*="Plus+Jakarta+Sans"]')) {
-        const fontLink = document.createElement('link');
-        fontLink.href = 'https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Plus+Jakarta+Sans:wght@400;600;800&display=swap';
-        fontLink.rel = 'stylesheet';
-        document.head.appendChild(fontLink);
-    }
-
     const styleSheet = document.createElement("style");
     styleSheet.textContent = `
         #smart-garden-widget { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            color: #334155; 
-            max-width: 300px; 
-            margin: 20px auto; 
+            width: 300px; 
+            margin: 10px auto;
+            display: inline-block;
             text-align: left;
+            /* Nem kényszerítünk betűtípust, örökli a blogét */
         }
         .garden-main-card { 
-            background: #ffffff; 
-            padding: 25px; 
-            border: 1px solid #f1f5f9; 
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08); 
+            padding: 15px; 
+            border: 1px solid transparent; /* A blog CSS-ed adhat neki keretet */
             border-radius: 12px; 
         }
-        .garden-title { font-family: 'Dancing Script', cursive; font-size: 42px; text-align: center; margin-bottom: 20px; color: #1e293b; line-height: 1; }
-        .section-title { font-size: 11px; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 12px; text-transform: uppercase; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; }
+        .garden-title { 
+            font-size: 28px; 
+            text-align: center; 
+            margin-bottom: 15px;
+            /* Szín és súly törölve, a Winter Skin CSS-ed irányítja */
+        }
+        .section-title { 
+            font-size: 11px; 
+            font-weight: 800; 
+            letter-spacing: 1.5px; 
+            margin-bottom: 12px; 
+            text-transform: uppercase; 
+            border-bottom: 1px solid rgba(128,128,128,0.2); 
+            padding-bottom: 5px; 
+        }
+        /* Csak a típusjelző vonalak maradnak színesek a felismerhetőség miatt */
         .alert-header { color: #b91c1c; }
         .info-header { color: #6691b3; margin-top: 25px; }
-        .card-container { position: relative; padding-left: 18px; margin-bottom: 15px; min-height: 85px; }
+        
+        .card-container { position: relative; padding-left: 18px; margin-bottom: 15px; min-height: 80px; }
         .card-line { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; border-radius: 2px; }
-        .event-name { font-size: 17px; font-weight: 800; margin-bottom: 2px; color: #1e293b; }
-        .event-range { font-size: 10px; font-weight: 700; color: #94a3b8; margin-bottom: 6px; text-transform: uppercase; }
-        .event-msg { font-size: 12.5px; line-height: 1.5; color: #475569; }
-        .garden-footer { text-align: center; font-size: 9px; color: #94a3b8; margin-top: 20px; padding-top: 15px; border-top: 1px solid #f1f5f9; line-height: 1.6; }
+        
+        .event-name { font-size: 16px; font-weight: 800; margin-bottom: 2px; }
+        .event-range { font-size: 9px; font-weight: 700; opacity: 0.6; margin-bottom: 6px; text-transform: uppercase; }
+        .event-msg { font-size: 12px; line-height: 1.5; }
+        
+        .garden-footer { text-align: center; font-size: 9px; opacity: 0.5; margin-top: 15px; padding-top: 10px; border-top: 1px solid rgba(128,128,128,0.2); line-height: 1.6; }
+        
         .loc-btn { 
-            border: 1px solid #346080; 
-            background: #346080; 
-            color: white;
-            padding: 10px; 
-            font-size: 10px; 
+            border: 1px solid currentColor; 
+            background: none; 
+            color: inherit;
+            padding: 8px; 
+            font-size: 9px; 
             font-weight: 800; 
             cursor: pointer; 
             width: 100%; 
-            margin-bottom: 20px; 
-            border-radius: 6px;
-            letter-spacing: 0.5px;
+            margin-bottom: 15px; 
+            border-radius: 4px;
+            opacity: 0.8;
         }
-        .loc-btn:hover { background: #2a4d66; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade { animation: fadeIn 0.5s ease-out forwards; }
     `;
@@ -176,7 +184,7 @@
 
             const renderZone = (items, fallback, id) => {
                 const displayItems = items.length ? items : [fallback];
-                return `<div id="${id}-carousel" style="min-height: 100px;">
+                return `<div id="${id}-carousel" style="min-height: 90px;">
                     ${displayItems.map((item, idx) => `
                         <div class="card-container animate-fade" style="${idx > 0 ? 'display:none;' : ''}">
                             <div class="card-line" style="background: ${item.color}"></div>
@@ -200,7 +208,7 @@
                     <div class="garden-footer">
                         Frissítve: ${lastUpdate.toLocaleTimeString('hu-HU', {hour:'2-digit', minute:'2-digit'})}<br>
                         Winter Skin Edition<br>
-                        v3.4.5
+                        v3.4.7
                     </div>
                 </div>`;
 
@@ -221,9 +229,11 @@
                 let idx = 0;
                 setInterval(() => {
                     const cards = container.querySelectorAll('.card-container');
-                    cards[idx].style.display = 'none';
-                    idx = (idx + 1) % count;
-                    cards[idx].style.display = 'block';
+                    if(cards.length > 0) {
+                        cards[idx].style.display = 'none';
+                        idx = (idx + 1) % count;
+                        cards[idx].style.display = 'block';
+                    }
                 }, 6000);
             };
             setupCarousel('alert', alerts.length || 1);
@@ -233,4 +243,3 @@
     }
     init();
 })();
-
