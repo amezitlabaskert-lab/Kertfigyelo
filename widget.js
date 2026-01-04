@@ -19,6 +19,7 @@
         }
         .alert-header { color: #b91c1c !important; }
         .info-header { color: #6691b3 !important; margin-top: 25px !important; }
+        .window-header { color: #2d6a4f !important; margin-top: 25px !important; }
         
         .event-name { font-weight: 800 !important; font-size: 16px !important; margin-bottom: 2px; color: #000000; }
         .card-container { position: relative; padding-left: 18px; margin-bottom: 15px; min-height: 85px; }
@@ -110,7 +111,6 @@
             if (cachedData) {
                 try {
                     const parsed = JSON.parse(cachedData);
-                    // 1800000 ms = 30 perc frissítési időköz
                     if (new Date().getTime() - parsed.timestamp < 1800000 && Number(parsed.lat) === lat) {
                         weather = parsed.data; lastUpdate = new Date(parsed.timestamp);
                     }
@@ -151,14 +151,21 @@
                     const sStr = fmt(activeRange.start);
                     const eStr = fmt(activeRange.end);
                     const rangeStr = (sStr === eStr) ? sStr : `${sStr} — ${eStr}`;
-                    results.push({ range: rangeStr, title: rule.name, msg: rule.message, type: rule.type, color: rule.type === 'alert' ? '#b91c1c' : '#6691b3' });
+                    
+                    let itemColor = '#6691b3';
+                    if (rule.type === 'alert') itemColor = '#b91c1c';
+                    if (rule.type === 'window') itemColor = '#2d6a4f';
+
+                    results.push({ range: rangeStr, title: rule.name, msg: rule.message, type: rule.type, color: itemColor });
                 }
             });
 
             const alerts = results.filter(r => r.type === 'alert');
-            const infos = results.filter(r => r.type !== 'alert');
+            const windows = results.filter(r => r.type === 'window');
+            const infos = results.filter(r => r.type !== 'alert' && r.type !== 'window');
 
             const renderZone = (items, fallback, id) => {
+                if (items.length === 0 && !fallback) return '';
                 const displayItems = items.length ? items : [fallback];
                 return `<div id="${id}-carousel" style="min-height: 90px;">
                     ${displayItems.map((item, idx) => `
@@ -177,14 +184,20 @@
                     <button onclick="window.gardenAction()" class="loc-btn">
                         ${isPersonalized ? 'VISSZA AZ ALAPHOZ' : 'SAJÁT KERTFIGYELŐT SZERETNÉK!'}
                     </button>
+                    
                     <div class="section-title alert-header">Riasztások</div>
                     ${renderZone(alerts, { range: 'Jelenleg', title: 'Minden nyugi', msg: 'Nincs veszély a láthatáron.', color: '#000000' }, 'alert')}
+                    
+                    ${windows.length ? '<div class="section-title window-header">Lehetőségek</div>' : ''}
+                    ${renderZone(windows, null, 'window')}
+
                     <div class="section-title info-header">Teendők</div>
                     ${renderZone(infos, { range: 'MA', title: 'Pihenj!', msg: 'Élvezd a Mezítlábas Kertedet.', color: '#000000' }, 'info')}
+                    
                     <div class="garden-footer">
                         Last updated: ${lastUpdate.toLocaleTimeString('hu-HU', {hour:'2-digit', minute:'2-digit'})}<br>
                         Winter Skin Edition<br>
-                        v3.4.24
+                        v3.4.25
                     </div>
                 </div>`;
 
@@ -202,6 +215,7 @@
             const setupCarousel = (id, count) => {
                 if (count <= 1) return;
                 const container = document.getElementById(`${id}-carousel`);
+                if (!container) return;
                 let idx = 0;
                 setInterval(() => {
                     const cards = container.querySelectorAll('.card-container');
@@ -213,6 +227,7 @@
                 }, 6000);
             };
             setupCarousel('alert', alerts.length || 1);
+            setupCarousel('window', windows.length);
             setupCarousel('info', infos.length || 1);
 
         } catch (e) { console.error(e); }
