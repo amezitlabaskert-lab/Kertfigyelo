@@ -1,7 +1,7 @@
 [
   {
     "name": "🔎 Szél utáni szemle",
-    "message": "Erős szél volt az elmúlt 24 órában (40+ km/h). Nézz rá a támrendszerekre és a kötözésekre!",
+    "message": "Erős szél volt az elmúlt napokban. Nézz rá a támrendszerekre és a kötözésekre!",
     "type": "info",
     "conditions": { 
       "wind_min_any": 40, 
@@ -10,7 +10,7 @@
   },
   {
     "name": "🔎 Eső utáni szemle",
-    "message": "Jelentős eső esett az elmúlt 24 órában (15mm+). Ellenőrizd a vízelvezetést és a cserepeseket!",
+    "message": "Jelentős eső esett az elmúlt napokban. Ellenőrizd a vízelvezetést és a cserepeseket!",
     "type": "info",
     "conditions": { 
       "rain_min_any": 15, 
@@ -115,3 +115,4 @@
     "message": "A díszbogarak rajzásának kezdete mostanában várható. Figyeld a borókákat, tujákat és ciprusokat!"
   }
 ]
+
