@@ -61,7 +61,6 @@
         if (c.temp_above !== undefined && !checkSustained(weather, i, 'temperature_2m_max', c.temp_above, 'above', days)) return false;
         if (c.temp_below !== undefined && !checkSustained(weather, i, 'temperature_2m_max', c.temp_below, 'below', days)) return false;
         
-        // Speciális 'any' szél-logika a téli aszályhoz
         if (c.wind_min_any !== undefined) {
             if (!checkSustained(weather, i, 'wind_gusts_10m_max', c.wind_min_any, 'min-any', days)) return false;
         } else if (c.wind_min !== undefined) {
@@ -100,7 +99,7 @@
         const widgetDiv = document.getElementById('smart-garden-widget');
         if (!widgetDiv) return;
 
-        const alerts = [], infos = [];
+        const alerts = [];
         const pastOffset = 7; 
 
         rules.forEach(rule => {
@@ -132,9 +131,12 @@
                             ${isPersonalized ? 'ALAPHELYZET' : 'SAJÁT KERT'}
                         </button>
                     </div>
-                    <div id="alert-zone" style="min-height: 110px;"></div>
-                    <div style="height: 20px;"></div>
-                    <div id="info-zone" style="min-height: 110px;"></div>
+                    <div id="alert-zone" style="height: 135px; overflow: hidden;"></div>
+                    <div style="height: 25px;"></div>
+                    <div id="info-zone" style="height: 135px; overflow: hidden;"></div>
+                    <div style="font-size: 8px; color: #cbd5e1; text-transform: uppercase; letter-spacing: 2px; margin-top: 15px; text-align: center;">
+                        v3.1.5 • Smooth Flow Engine
+                    </div>
                 </div>
             </div>`;
 
@@ -145,18 +147,30 @@
             let idx = 0;
             const update = () => {
                 const item = items[idx];
+                
+                // Animáció kezdete: elhalványul és kicsit lejjebb úszik
                 container.style.opacity = 0;
+                container.style.transform = "translateY(8px)";
+                
                 setTimeout(() => {
-                    container.innerHTML = `<div style="border-left: 4px solid ${item.color}; padding-left: 15px;">
-                        <div style="font-size: 11px; font-weight: bold; color: ${item.color}; text-transform: uppercase; margin-bottom: 5px;">${item.dStr}</div>
-                        <div style="font-size: 17px; font-weight: 800; color: #1e293b; line-height: 1.2; margin-bottom: 8px;">${esc(item.title)}</div>
-                        <p style="margin:0; font-size: 14px; line-height: 1.5;">${esc(item.msg)}</p>
-                    </div>`;
+                    container.innerHTML = `
+                        <div style="border-left: 4px solid ${item.color}; padding-left: 15px; height: 100%; display: flex; flex-direction: column; justify-content: flex-start;">
+                            <div style="font-size: 11px; font-weight: bold; color: ${item.color}; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 0.5px;">${item.dStr}</div>
+                            <div style="font-size: 17px; font-weight: 800; color: #1e293b; line-height: 1.2; margin-bottom: 8px;">${esc(item.title)}</div>
+                            <p style="margin:0; font-size: 13px; line-height: 1.4; color: #475569;">${esc(item.msg)}</p>
+                        </div>`;
+                    
+                    // Visszaúszik a helyére és megjelenik
                     container.style.opacity = 1;
+                    container.style.transform = "translateY(0px)";
+                    
                     idx = (idx + 1) % items.length;
                 }, 500);
             };
-            container.style.transition = "opacity 0.5s";
+            
+            // Beállítjuk a transition-t az egész containerre
+            container.style.transition = "opacity 0.6s ease-in-out, transform 0.6s ease-out";
+            
             update();
             if (items.length > 1) setInterval(update, 6000);
         };
