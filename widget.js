@@ -1,5 +1,5 @@
 (async function() {
-    // 1. Fontok és Stílusok (v3.6.7 - Dinamikus Title + Pulse Animation)
+    // 1. Fontok és Stílusok (v3.6.8 - UX Time-Badges + Winter Skin)
     const fontLink = document.createElement('link');
     fontLink.href = 'https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Plus+Jakarta+Sans:wght@400;700;800&display=swap';
     fontLink.rel = 'stylesheet';
@@ -31,9 +31,18 @@
         .card-type-info { background: #6691b3 !important; }
         .card-type-none { background: #94a3b8 !important; }
         .event-name { font-family: 'Plus Jakarta Sans', sans-serif !important; font-weight: 800 !important; font-size: 16px !important; margin-bottom: 2px; color: #1e293b; }
-        .event-range { font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 11px !important; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; opacity: 0.8; color: #64748b; }
+        
+        /* Idő-badge stílusok a jobb UX érdekében */
+        .event-range { display: flex; align-items: center; font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 11px !important; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; color: #64748b; }
+        .time-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px !important; font-weight: 800; margin-right: 5px; vertical-align: middle; }
+        .time-urgent { background: #b91c1c; color: #fff; animation: pulse-invitation 2s infinite; }
+        .time-warning { background: #ea580c; color: #fff; }
+        .time-soon { background: #64748b; color: #fff; }
+
         .event-msg { font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 14px !important; line-height: 1.45; color: #334155; }
         .garden-footer { text-align: center; font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 10px !important; margin-top: auto; padding-top: 8px; line-height: 1.4; border-top: 1px solid rgba(0,0,0,0.05); opacity: 0.6; }
+        
+        /* A loc-btn stílusát a CSS-ed winter-skin része felülírja, de itt az alap */
         .loc-btn { 
             width: 100%; cursor: pointer; padding: 10px; font-family: 'Plus Jakarta Sans', sans-serif !important; 
             font-size: 10px; margin-bottom: 5px; text-transform: uppercase; font-weight: 800; border: none; 
@@ -93,6 +102,7 @@
         if (!widgetDiv) return;
         
         try {
+            // Isaszeg koordináták: 47.5136, 19.3735
             let lat = 47.5136, lon = 19.3735, isPers = false;
             const sLat = localStorage.getItem('garden-lat'), sLon = localStorage.getItem('garden-lon');
             if (sLat && sLon) { lat = Number(sLat); lon = Number(sLon); isPers = true; }
@@ -102,6 +112,7 @@
 
             if (cached) {
                 const p = JSON.parse(cached);
+                // Félórás (1800000ms) cache idő
                 if (Date.now() - p.ts < 1800000 && Math.abs(p.lat - lat) < 0.01) {
                     weather = p.data; lastUpdate = new Date(p.ts);
                 }
@@ -138,13 +149,28 @@
                         if (!range) range = { start: d, end: d }; else range.end = d;
                     } else if (range) break;
                 }
+                
                 if (range && noon(range.end) >= noon(todayStr)) {
-                    const fmt = date => {
+                    const fmt = (date, isStart) => {
                         const diff = Math.round((noon(date) - noon(todayStr)) / 86400000);
-                        if (diff === 0) return "MA"; if (diff === 1) return "HOLNAP";
+                        let timeLabel = "";
+                        let urgencyClass = "";
+
+                        if (isStart) {
+                            if (diff === 0) { timeLabel = "MA ESTE"; urgencyClass = "time-urgent"; }
+                            else if (diff === 1) { timeLabel = "HOLNAP"; urgencyClass = "time-warning"; }
+                            else if (diff > 1 && diff <= 3) { timeLabel = diff + " NAP MÚLVA"; urgencyClass = "time-soon"; }
+                            else { timeLabel = date.toLocaleDateString('hu-HU', {month:'short', day:'numeric'}).toUpperCase().replace('.',''); }
+                            return `<span class="time-badge ${urgencyClass}">${timeLabel}</span>`;
+                        }
                         return date.toLocaleDateString('hu-HU', {month:'short', day:'numeric'}).toUpperCase().replace('.','');
                     };
-                    results.push({ range: fmt(range.start) + (noon(range.start) !== noon(range.end) ? ' — ' + fmt(range.end) : ''), title: rule.name, msg: rule.message, type: rule.type });
+
+                    const dateRangeStr = (noon(range.start) !== noon(range.end)) 
+                        ? fmt(range.start, true) + ' — ' + fmt(range.end, false)
+                        : fmt(range.start, true);
+
+                    results.push({ range: dateRangeStr, title: rule.name, msg: rule.message, type: rule.type });
                 }
             });
 
@@ -162,7 +188,6 @@
                     </div>`).join('')}</div>`;
             };
 
-            // Visszahoztuk a személyességet a címbe!
             widgetDiv.innerHTML = `
                 <div class="garden-main-card">
                     <div class="garden-title">${isPers ? 'Kertfigyelőd' : 'Kertfigyelő'}</div>
@@ -173,7 +198,7 @@
                     ${renderZone(results.filter(r => r.type === 'window'), null, 'window')}
                     <div class="section-title">Teendők</div>
                     ${renderZone(results.filter(r => r.type !== 'alert' && r.type !== 'window'), getSeasonalFallback('info'), 'info')}
-                    <div class="garden-footer">Last updated: ${lastUpdate.toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})}<br>v3.6.7 - Seasonal Edition</div>
+                    <div class="garden-footer">Last updated: ${lastUpdate.toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})}<br>v3.6.8 - UX Edition</div>
                 </div>`;
 
             document.getElementById('locBtn').onclick = () => {
@@ -207,7 +232,3 @@
     }
     init();
 })();
-
-
-
-
