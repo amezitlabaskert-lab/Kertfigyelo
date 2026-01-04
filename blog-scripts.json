@@ -1,5 +1,18 @@
 [
   {
+  "id": "mersekelt-fagy",
+  "name": "❄️ Mérsékelt fagy várható",
+  "type": "alert",
+  "conditions": { "temp_below": -5 },
+  "seasons": [{ "start": "11-01", "end": "03-31" }],
+  "plants": [
+    "Közönséges füge (Ficus carica)",
+    "Babérmeggy (Prunus laurocerasus)",
+    "Örökzöld díszcserjék"
+  ],
+  "message": "A hőmérséklet -5°C alá süllyed. Érdemes ellenőrizni a fiatal növények takarását és az örökzöldek vízellátottságát!"
+},
+  {
     "id": "eros-fagy-riado",
     "name": "❄️ Erős fagyok várhatók",
     "type": "alert",
@@ -78,3 +91,4 @@
     "message": "A tartós meleg kedvez a díszbogarak rajzásának. Ebben az időszakban javasolt az érintett növények megfigyelése."
   }
 ]
+
