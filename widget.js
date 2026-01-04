@@ -1,7 +1,6 @@
 (async function() {
     const esc = str => String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]));
     
-    // Geofencing - Magyarország határai (Anonim marad, csak a háttérben fut)
     const HU_BOUNDS = { latMin: 45.7, latMax: 48.6, lonMin: 16.1, lonMax: 22.9 };
     const isInHungary = (lat, lon) => lat >= HU_BOUNDS.latMin && lat <= HU_BOUNDS.latMax && lon >= HU_BOUNDS.lonMin && lon <= HU_BOUNDS.lonMax;
 
@@ -18,6 +17,7 @@
             100% { box-shadow: 0 0 0 0 rgba(52, 96, 128, 0); background-color: #346080; }
         }
         .garden-btn-animate { animation: gardenPulse 3s infinite ease-in-out; }
+        #alert-zone, #info-zone { transition: opacity 0.6s ease-in-out, transform 0.6s ease-out; }
     `;
     document.head.appendChild(styleSheet);
 
@@ -57,6 +57,7 @@
             if (operator.includes('below') && val <= threshold) currentSatisfied = true;
             if (operator.includes('max') && val <= threshold) currentSatisfied = true;
             if (operator.includes('min') && val >= threshold) currentSatisfied = true;
+            
             if (!currentSatisfied && !operator.includes('-any')) return false;
             if (currentSatisfied) anySatisfied = true;
         }
@@ -66,44 +67,54 @@
     function checkDay(rule, weather, date, i) {
         const seasons = rule.seasons || (rule.season ? [rule.season] : null);
         if (seasons && !seasons.some(s => isInSeason(date, s.start, s.end))) return false;
+        
         const c = rule.conditions || {};
         const days = c.days_min || 1;
-        if (c.temp_above !== undefined && !checkSustained(weather, i, 'temperature_2m_max', c.temp_above, 'above', days)) return false;
-        if (c.temp_below !== undefined && !checkSustained(weather, i, 'temperature_2m_max', c.temp_below, 'below', days)) return false;
-        if (c.wind_min_any !== undefined) {
-            if (!checkSustained(weather, i, 'wind_gusts_10m_max', c.wind_min_any, 'min-any', days)) return false;
-        } else if (c.wind_min !== undefined) {
-            if (!checkSustained(weather, i, 'wind_gusts_10m_max', c.wind_min, 'min', days)) return false;
+
+        if (c.temp_below !== undefined) {
+            if (!checkSustained(weather, i, 'temperature_2m_min', c.temp_below, 'below', days)) return false;
         }
-        if (c.wind_max !== undefined && !checkSustained(weather, i, 'wind_gusts_10m_max', c.wind_max, 'max', days)) return false;
-        if (c.rain_min !== undefined && weather.daily.precipitation_sum[i] < c.rain_min) return false;
+        if (c.temp_above !== undefined) {
+            if (!checkSustained(weather, i, 'temperature_2m_max', c.temp_above, 'above', days)) return false;
+        }
+
+        const windKey = rule.type === 'window' ? 'wind_speed_10m_max' : 'wind_gusts_10m_max';
+        if (c.wind_min_any !== undefined) {
+            if (!checkSustained(weather, i, windKey, c.wind_min_any, 'min-any', days)) return false;
+        } else if (c.wind_min !== undefined) {
+            if (!checkSustained(weather, i, windKey, c.wind_min, 'min', days)) return false;
+        }
+        if (c.wind_max !== undefined && !checkSustained(weather, i, windKey, c.wind_max, 'max', days)) return false;
+        
+        // JAVÍTOTT ESŐ LOGIKA (v3.3.7)
+        if (c.rain_min_any !== undefined) {
+            if (!checkSustained(weather, i, 'precipitation_sum', c.rain_min_any, 'min-any', days)) return false;
+        } else if (c.rain_min !== undefined) {
+            if (weather.daily.precipitation_sum[i] < c.rain_min) return false;
+        }
+        
         if (c.rain_max !== undefined && !checkSustained(weather, i, 'precipitation_sum', c.rain_max, 'max', days)) return false;
+        
         return true;
     }
 
     window.activateLocalWeather = () => navigator.geolocation.getCurrentPosition(p => {
-        const uLat = p.coords.latitude;
-        const uLon = p.coords.longitude;
+        const uLat = p.coords.latitude, uLon = p.coords.longitude;
         if (isInHungary(uLat, uLon)) {
-            storage.setItem('garden-lat', uLat);
-            storage.setItem('garden-lon', uLon);
-            storage.removeItem('garden-weather-cache');
-            location.reload();
-        } else {
-            alert("A testreszabás csak Magyarország területén érhető el.");
-        }
-    }, (err) => { alert("Kérlek engedélyezd a helyszínt!"); });
+            storage.setItem('garden-lat', uLat); storage.setItem('garden-lon', uLon);
+            storage.removeItem('garden-weather-cache'); location.reload();
+        } else alert("A testreszabás csak Magyarország területén érhető el.");
+    }, (err) => alert("Kérlek engedélyezd a helyszínt!"));
 
     window.resetLocation = () => { 
         storage.removeItem('garden-lat'); storage.removeItem('garden-lon');
-        storage.removeItem('garden-weather-cache');
-        location.reload();
+        storage.removeItem('garden-weather-cache'); location.reload();
     };
 
     try {
         let lat = 47.5136, lon = 19.3735, isPersonalized = false;
         const sLat = storage.getItem('garden-lat'), sLon = storage.getItem('garden-lon');
-        if (sLat && sLon) { lat = sLat; lon = sLon; isPersonalized = true; }
+        if (sLat && sLon) { lat = Number(sLat); lon = Number(sLon); isPersonalized = true; }
 
         const cacheKey = 'garden-weather-cache';
         const cachedData = storage.getItem(cacheKey);
@@ -112,9 +123,8 @@
         if (cachedData) {
             const parsed = JSON.parse(cachedData);
             const now = new Date().getTime();
-            if (now - parsed.timestamp < 1800000 && parsed.lat == lat && parsed.lon == lon) {
-                weather = parsed.data;
-                lastUpdate = new Date(parsed.timestamp);
+            if (now - parsed.timestamp < 1800000 && Number(parsed.lat) === lat && Number(parsed.lon) === lon) {
+                weather = parsed.data; lastUpdate = new Date(parsed.timestamp);
             }
         }
 
@@ -122,7 +132,7 @@
         const rules = await rRes.json();
 
         if (!weather) {
-            const wRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${Number(lat).toFixed(4)}&longitude=${Number(lon).toFixed(4)}&daily=temperature_2m_max,wind_gusts_10m_max,precipitation_sum&past_days=7&timezone=auto`);
+            const wRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&daily=temperature_2m_max,temperature_2m_min,wind_speed_10m_max,wind_gusts_10m_max,precipitation_sum&past_days=7&timezone=auto`);
             weather = await wRes.json();
             const timestamp = new Date().getTime();
             storage.setItem(cacheKey, JSON.stringify({ timestamp, data: weather, lat, lon }));
@@ -137,18 +147,18 @@
             for (let i = 7; i < weather.daily.time.length; i++) {
                 const d = new Date(weather.daily.time[i]);
                 if (checkDay(rule, weather, d, i)) {
-                    const label = rule.type === 'alert' ? 'RIASZTÁSOK' : 'TEENDŐK';
+                    const dateStr = d.toLocaleDateString('hu-HU', {month:'short', day:'numeric'});
                     const color = rule.type === 'alert' ? '#b91c1c' : (rule.type === 'window' ? '#15803d' : '#6691b3');
-                    alerts.push({ dStr: label, title: rule.name, msg: rule.message, color, type: rule.type });
-                    break;
+                    alerts.push({ dStr: dateStr, title: rule.name, msg: rule.message, color, type: rule.type });
+                    break; 
                 }
             }
         });
 
         const finalAlerts = alerts.filter(a => a.type === 'alert');
         const finalInfos = alerts.filter(a => a.type !== 'alert');
-        const alertFallback = [{ dStr: "RIASZTÁSOK", title: "☕ Most minden nyugi", msg: "A Kertfigyelő nem lát veszélyt a láthatáron.", color: "#346080" }];
-        const infoFallback = [{ dStr: "TEENDŐK", title: "🌿 Pihenj!", msg: "Élvezd a Mezítlábas Kertedet.", color: "#6691b3" }];
+        const alertFallback = [{ dStr: "MOST", title: "☕ Minden nyugi", msg: "A Kertfigyelő nem lát veszélyt a láthatáron.", color: "#346080" }];
+        const infoFallback = [{ dStr: "MA", title: "🌿 Pihenj!", msg: "Élvezd a Mezítlábas Kertedet.", color: "#6691b3" }];
         const timeStr = lastUpdate.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' });
 
         const isMobile = window.innerWidth < 1250;
@@ -158,7 +168,7 @@
             <div style="${sidebarStyle} font-family: 'Plus Jakarta Sans', sans-serif;" id="garden-floating-sidebar">
                 <div style="background: #ffffff; padding: 25px 25px 15px 25px; box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.5); border: 1px solid #f1f5f9;">
                     <div style="text-align: center; border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 15px; margin-bottom: 20px;">
-                        <div class="garden-widget-main-title" style="font-family: 'Dancing Script', cursive; font-size: 3.6em; font-weight: 700; margin: 15px 0; line-height: 1;">
+                        <div style="font-family: 'Dancing Script', cursive; font-size: 3.6em; font-weight: 700; margin: 15px 0; line-height: 1;">
                             ${isPersonalized ? 'Kertfigyelőd' : 'Kertfigyelő'}
                         </div>
                         <button onclick="${isPersonalized ? 'resetLocation()' : 'activateLocalWeather()'}" 
@@ -168,12 +178,10 @@
                         </button>
                     </div>
                     <div id="alert-zone" style="height: 135px; overflow: hidden;"></div>
-                    <div class="garden-separator" style="height: 15px; margin-bottom: 15px;"></div>
+                    <div style="height: 15px; margin-bottom: 15px;"></div>
                     <div id="info-zone" style="height: 135px; overflow: hidden;"></div>
-                    <div class="garden-footer-text" style="margin-top: 10px; text-align: center; line-height: 1.4; font-size: 8px; text-transform: uppercase; letter-spacing: 1px;">
-                        Frissítve: ${timeStr}<br>
-                        Winter Skin Edition<br>
-                        v3.3.2
+                    <div style="margin-top: 10px; text-align: center; line-height: 1.4; font-size: 8px; text-transform: uppercase; letter-spacing: 1px; color: #64748b;">
+                        Frissítve: ${timeStr} | Winter Skin | v3.3.7
                     </div>
                 </div>
             </div>`;
@@ -183,27 +191,21 @@
             let idx = 0;
             const update = () => {
                 const item = items[idx];
-                container.style.opacity = 0;
-                container.style.transform = "translateY(8px)";
+                container.style.opacity = 0; container.style.transform = "translateY(8px)";
                 setTimeout(() => {
                     container.innerHTML = `
-                        <div style="border-left: 4px solid ${item.color}; padding-left: 15px; height: 100%; display: flex; flex-direction: column; justify-content: flex-start;">
-                            <div class="garden-label" style="margin-bottom: 5px;">${item.dStr}</div>
-                            <div class="garden-card-title" style="font-size: 17px; font-weight: 800; line-height: 1.2; margin-bottom: 8px;">${esc(item.title)}</div>
-                            <p class="garden-card-msg" style="margin:0; font-size: 13px; line-height: 1.4;">${esc(item.msg)}</p>
+                        <div style="border-left: 4px solid ${item.color}; padding-left: 15px; height: 100%;">
+                            <div style="font-size: 9px; font-weight: 800; color: ${item.color}; margin-bottom: 5px; letter-spacing: 1px;">${item.dStr.toUpperCase()}</div>
+                            <div style="font-size: 17px; font-weight: 800; line-height: 1.2; margin-bottom: 8px;">${esc(item.title)}</div>
+                            <p style="margin:0; font-size: 13px; line-height: 1.4; color: #334155;">${esc(item.msg)}</p>
                         </div>`;
-                    container.style.opacity = 1;
-                    container.style.transform = "translateY(0px)";
+                    container.style.opacity = 1; container.style.transform = "translateY(0px)";
                     idx = (idx + 1) % items.length;
                 }, 500);
             };
-            container.style.transition = "opacity 0.6s ease-in-out, transform 0.6s ease-out";
-            update();
-            if (items.length > 1) setInterval(update, 6000);
+            update(); if (items.length > 1) setInterval(update, 6000);
         };
         startCarousel('alert-zone', finalAlerts.length ? finalAlerts : alertFallback);
         startCarousel('info-zone', finalInfos.length ? finalInfos : infoFallback);
     } catch (e) { console.error("Kertfigyelő hiba:", e); }
 })();
-
-
