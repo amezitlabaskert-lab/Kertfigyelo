@@ -3,47 +3,37 @@
     
     const styleSheet = document.createElement("style");
     styleSheet.textContent = `
-        /* ASZTALI NÉZET: A logó alatt lebeg bal oldalon */
-        @media screen and (min-width: 769px) {
-            #smart-garden-widget-wrapper {
-                position: absolute !important;
-                top: 380px !important; 
-                left: 15% !important;
-                transform: translateX(-50%) !important;
-                z-index: 9999 !important;
-                width: 320px !important;
-                margin: 0 !important;
-            }
-        }
-        /* MOBIL NÉZET: Visszakerül a tartalom végére */
-        @media screen and (max-width: 768px) {
-            #smart-garden-widget-wrapper {
-                position: static !important;
-                display: block !important;
-                width: 100% !important;
-                max-width: 320px;
-                margin: 40px auto !important;
-            }
-        }
-        #smart-garden-widget { width: 300px; text-align: left; font-family: 'Plus Jakarta Sans', sans-serif !important; }
-        .garden-main-card { background: #ffffff !important; padding: 25px; border: none !important; box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.5) !important; }
+        #smart-garden-widget { width: 300px; text-align: left; font-family: 'Plus Jakarta Sans', sans-serif !important; color: #000000; }
+        .garden-main-card { background: #ffffff !important; padding: 25px; border: none !important; box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.5) !important; margin-bottom: 40px !important; }
+        
         .garden-title { font-family: 'Dancing Script', cursive !important; font-size: 3.6em !important; text-align: center !important; color: #6691b3 !important; margin: 15px 0 !important; line-height: 1.2; }
-        .section-title { font-size: 11px; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 12px; text-transform: uppercase; border-bottom: 1px solid #eeeeee; padding-bottom: 5px; }
+        
+        .section-title { 
+            font-weight: 800 !important; 
+            font-size: 16px !important; 
+            text-transform: uppercase; 
+            letter-spacing: 1.5px; 
+            border-bottom: 1px solid #eeeeee; 
+            margin-bottom: 12px; 
+            padding-bottom: 5px; 
+        }
         .alert-header { color: #b91c1c !important; }
-        .info-header { color: #6691b3 !important; margin-top: 25px; }
+        .info-header { color: #6691b3 !important; margin-top: 25px !important; }
+        
+        .event-name { font-weight: 800 !important; font-size: 16px !important; margin-bottom: 2px; color: #000000; }
         .card-container { position: relative; padding-left: 18px; margin-bottom: 15px; min-height: 85px; }
         .card-line { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
-        .event-name { font-size: 16px; font-weight: 800; margin-bottom: 2px; color: #000000; }
         .event-range { font-size: 9px; font-weight: 700; opacity: 0.7; margin-bottom: 6px; text-transform: uppercase; color: #000000; }
         .event-msg { font-size: 12px; line-height: 1.5; color: #000000; }
+        
         .garden-footer { text-align: center; font-size: 9px; opacity: 0.5; margin-top: 20px; padding-top: 10px; border-top: 1px solid #eeeeee; line-height: 1.6; color: #000000; }
         .loc-btn { width: 100%; cursor: pointer; padding: 10px; font-size: 10px; background: none; border: 1px solid #000000; color: #000000; margin-bottom: 20px; }
+        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade { animation: fadeIn 0.5s ease-out forwards; }
     `;
     document.head.appendChild(styleSheet);
 
-    // --- LOGIKA ÉS MEMÓRIA ---
     function createSafeStorage() {
         const memoryStore = {};
         try {
@@ -120,6 +110,7 @@
             if (cachedData) {
                 try {
                     const parsed = JSON.parse(cachedData);
+                    // 1800000 ms = 30 perc frissítési időköz
                     if (new Date().getTime() - parsed.timestamp < 1800000 && Number(parsed.lat) === lat) {
                         weather = parsed.data; lastUpdate = new Date(parsed.timestamp);
                     }
@@ -157,7 +148,9 @@
                         if (diff < 0) return "ELMÚLT NAPOK";
                         return d.toLocaleDateString('hu-HU', {month:'short', day:'numeric'}).replace('.','').toUpperCase();
                     };
-                    const rangeStr = activeRange.start.getTime() === activeRange.end.getTime() ? fmt(activeRange.start) : `${fmt(activeRange.start)} — ${fmt(activeRange.end)}`;
+                    const sStr = fmt(activeRange.start);
+                    const eStr = fmt(activeRange.end);
+                    const rangeStr = (sStr === eStr) ? sStr : `${sStr} — ${eStr}`;
                     results.push({ range: rangeStr, title: rule.name, msg: rule.message, type: rule.type, color: rule.type === 'alert' ? '#b91c1c' : '#6691b3' });
                 }
             });
@@ -191,7 +184,7 @@
                     <div class="garden-footer">
                         Last updated: ${lastUpdate.toLocaleTimeString('hu-HU', {hour:'2-digit', minute:'2-digit'})}<br>
                         Winter Skin Edition<br>
-                        v3.4.22
+                        v3.4.24
                     </div>
                 </div>`;
 
