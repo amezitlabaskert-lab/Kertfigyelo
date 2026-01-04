@@ -4,7 +4,6 @@
     const styleSheet = document.createElement("style");
     styleSheet.textContent = `
         #smart-garden-widget { width: 300px; text-align: left; }
-        /* A kártya alapvető megjelenése - színtelen, de a háttér fehér */
         .garden-main-card { background: #ffffff !important; padding: 25px; margin-bottom: 40px !important; box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.5) !important; }
         
         .garden-title { font-family: 'Dancing Script', cursive !important; font-size: 3.6em !important; text-align: center !important; margin: 15px 0 !important; line-height: 1.2; }
@@ -28,22 +27,23 @@
         .card-container { position: relative; padding-left: 18px; min-height: 95px; }
         .card-line { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
         
-        /* FIX FUNKCIONÁLIS SZÍNEK - Ezek minden skinben azonosak */
-        .card-type-alert { background: #b91c1c !important; }   /* Piros */
-        .card-type-window { background: #2d6a4f !important; }  /* Zöld */
-        .card-type-info { background: #6691b3 !important; }    /* Kék (Teendő) */
-        .card-type-none { background: #94a3b8 !important; }    /* Szürke (Nyugi) */
+        /* FIX FUNKCIONÁLIS SZÍNEK */
+        .card-type-alert { background: #b91c1c !important; }
+        .card-type-window { background: #2d6a4f !important; }
+        .card-type-info { background: #6691b3 !important; }
+        .card-type-none { background: #94a3b8 !important; }
         
         .event-name { font-family: 'Plus Jakarta Sans', sans-serif !important; font-weight: 800 !important; font-size: 16px !important; margin-bottom: 2px; }
         .event-range { font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 9px; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; }
         .event-msg { font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 12px; line-height: 1.5; }
         
         .garden-footer { text-align: center; font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 9px; margin-top: 20px; padding-top: 10px; line-height: 1.6; border-top: 1px solid rgba(0,0,0,0.05); }
-        .loc-btn { width: 100%; cursor: pointer; padding: 10px; font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 10px; background: none; border: 1px solid currentColor; margin-bottom: 20px; }
+        
+        /* GOMB: Színek nélkül, hogy a CSS-ed színezhesse */
+        .loc-btn { width: 100%; cursor: pointer; padding: 12px; font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 10px; margin-bottom: 20px; text-transform: uppercase; font-weight: 800; border-radius: 4px; outline: none; }
     `;
     document.head.appendChild(styleSheet);
 
-    // ... (A tárolási és időjárás logika változatlan marad) ...
     function createSafeStorage() { const m={}; try { const t='t'; localStorage.setItem(t,t); localStorage.removeItem(t); return { getItem: (k)=>localStorage.getItem(k), setItem: (k,v)=>localStorage.setItem(k,v), removeItem: (k)=>localStorage.removeItem(k) }; } catch(e) { return { getItem: (k)=>m[k]||null, setItem: (k,v)=>{m[k]=v;}, removeItem: (k)=>{delete m[k];} }; } }
     const storage = createSafeStorage();
 
@@ -109,6 +109,7 @@
             if (cachedData) {
                 try {
                     const parsed = JSON.parse(cachedData);
+                    // Frissítési idő 30 percre csökkentve
                     if (new Date().getTime() - parsed.timestamp < 1800000 && Number(parsed.lat) === lat) {
                         weather = parsed.data; lastUpdate = new Date(parsed.timestamp);
                     }
@@ -163,7 +164,7 @@
                 <div class="garden-main-card">
                     <div class="garden-title">Kertfigyelő</div>
                     <button onclick="window.gardenAction()" class="loc-btn">
-                        ${isPers ? 'VISSZA AZ ALAPHOZ' : 'SAJÁT KERTFIGYELŐT SZERETNÉK!'}
+                        ${isPers ? 'VISSZA AZ ALAPHOZ' : 'A SAJÁT KERTEM KERTFIGYELŐJÉT SZERETNÉM'}
                     </button>
                     <div class="section-title">Riasztások</div>
                     ${renderZone(results.filter(r => r.type === 'alert'), { range: 'Jelenleg', title: 'Minden nyugi', msg: 'Nincs veszély a láthatáron.', type: 'none' }, 'alert')}
@@ -171,7 +172,7 @@
                     ${renderZone(results.filter(r => r.type === 'window'), null, 'window')}
                     <div class="section-title" style="margin-top:25px">Teendők</div>
                     ${renderZone(results.filter(r => r.type !== 'alert' && r.type !== 'window'), { range: 'MA', title: 'Pihenj!', msg: 'Élvezd a Mezítlábas Kertedet.', type: 'none' }, 'info')}
-                    <div class="garden-footer">Last updated: ${lastUpdate.toLocaleTimeString('hu-HU', {hour:'2-digit', minute:'2-digit'})}<br>Winter Skin Edition<br>v3.5.1</div>
+                    <div class="garden-footer">Last updated: ${lastUpdate.toLocaleTimeString('hu-HU', {hour:'2-digit', minute:'2-digit'})}<br>Winter Skin Edition<br>v3.5.2</div>
                 </div>`;
 
             window.gardenAction = () => {
