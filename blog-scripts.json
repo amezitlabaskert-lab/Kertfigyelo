@@ -1,17 +1,10 @@
 [
   {
-    "id": "enyhe-fagy",
-    "name": "🧊 Gyenge fagy várható",
-    "type": "info",
-    "conditions": { "temp_below": 0 },
-    "seasons": [{ "start": "03-01", "end": "05-20" }, { "start": "09-15", "end": "11-30" }],
-    "message": "Szezonális talajmenti fagy! Figyelj a friss hajtásokra és az érzékeny palántákra."
-  },
-  {
     "id": "eros-fagy-riado",
     "name": "❄️ Erős fagyok várhatók",
     "type": "alert",
     "conditions": { "temp_below": -10 },
+    "seasons": [{ "start": "11-01", "end": "03-15" }],
     "plants": [
       "Datolyaszilva (Diospyros kaki)", 
       "Közönséges füge (Ficus carica)", 
@@ -54,7 +47,7 @@
     "plants": ["Haszon- és dísznövények"],
     "message": "A lemosó permetezés segít az áttelelő kártevők és gombák ellen az egész kertben. Lehetőleg szélcsendes, felhős időt válassz a perzselés elkerülése érdekében. "
   },
-{
+  {
     "id": "leveltetu-megfigyeles",
     "name": "🪲 Levéltetvek (Aphidoidea) vs. Katicák",
     "type": "info",
@@ -70,7 +63,7 @@
     "seasons": [{ "start": "04-01", "end": "06-30" }],
     "conditions": { "temp_above": 15 },
     "message": "Megérkezett a tartós meleg, a katicák is aktivizálódnak! Most már segítenek kordában tartani a levéltetveket."
-  }
+  },
   {
     "id": "boroka-diszbogar-rajzas",
     "name": "🪲 Boróka-tarka díszbogár (Lamprodila festiva)",
@@ -83,5 +76,5 @@
       "Leila-ciprus (Cupressocyparis leylandii)"
     ],
     "message": "A tartós meleg kedvez a díszbogarak rajzásának. Ebben az időszakban javasolt az érintett növények megfigyelése."
-  },
+  }
 ]
