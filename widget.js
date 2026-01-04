@@ -1,13 +1,18 @@
 (async function() {
     const esc = str => String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]));
     
+    // --- SKIN BEÁLLÍTÁSOK ---
+    const skinColor = "#6691b3"; // Ez a Winter Skin alap kékje
+    // ------------------------
+
     const styleSheet = document.createElement("style");
     styleSheet.textContent = `
         #smart-garden-widget { width: 300px; text-align: left; font-family: 'Plus Jakarta Sans', sans-serif !important; color: #000000; }
         .garden-main-card { background: #ffffff !important; padding: 25px; border: none !important; box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.5) !important; margin-bottom: 40px !important; }
         
-        .garden-title { font-family: 'Dancing Script', cursive !important; font-size: 3.6em !important; text-align: center !important; color: #6691b3 !important; margin: 15px 0 !important; line-height: 1.2; }
+        .garden-title { font-family: 'Dancing Script', cursive !important; font-size: 3.6em !important; text-align: center !important; color: ${skinColor} !important; margin: 15px 0 !important; line-height: 1.2; }
         
+        /* WINTER SKIN: Egységes fejlécek */
         .section-title { 
             font-weight: 800 !important; 
             font-size: 16px !important; 
@@ -16,22 +21,36 @@
             border-bottom: 1px solid #eeeeee; 
             margin-bottom: 12px; 
             padding-bottom: 5px; 
+            color: ${skinColor} !important; /* Mostantól minden szekció címe skin színű */
         }
-        .alert-header { color: #b91c1c !important; }
-        .info-header { color: #6691b3 !important; margin-top: 25px !important; }
-        .window-header { color: #2d6a4f !important; margin-top: 25px !important; }
+        .section-spacer { margin-top: 25px !important; }
         
         .event-name { font-weight: 800 !important; font-size: 16px !important; margin-bottom: 2px; color: #000000; }
-        .card-container { position: relative; padding-left: 18px; margin-bottom: 15px; min-height: 85px; }
+        
+        .carousel-wrapper { position: relative; min-height: 110px; margin-bottom: 10px; }
+        .carousel-item { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            opacity: 0; 
+            visibility: hidden; 
+            transition: opacity 1.2s ease-in-out, transform 1.2s ease-in-out; 
+            transform: translateY(10px); 
+        }
+        .carousel-item.active { 
+            opacity: 1; 
+            visibility: visible; 
+            transform: translateY(0); 
+        }
+
+        .card-container { position: relative; padding-left: 18px; min-height: 95px; }
         .card-line { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
         .event-range { font-size: 9px; font-weight: 700; opacity: 0.7; margin-bottom: 6px; text-transform: uppercase; color: #000000; }
         .event-msg { font-size: 12px; line-height: 1.5; color: #000000; }
         
         .garden-footer { text-align: center; font-size: 9px; opacity: 0.5; margin-top: 20px; padding-top: 10px; border-top: 1px solid #eeeeee; line-height: 1.6; color: #000000; }
         .loc-btn { width: 100%; cursor: pointer; padding: 10px; font-size: 10px; background: none; border: 1px solid #000000; color: #000000; margin-bottom: 20px; }
-        
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade { animation: fadeIn 0.5s ease-out forwards; }
     `;
     document.head.appendChild(styleSheet);
 
@@ -146,7 +165,7 @@
                         if (diff === 0) return "MA";
                         if (diff === 1) return "HOLNAP";
                         if (diff < 0) return "ELMÚLT NAPOK";
-                        return d.toLocaleDateString('hu-HU', {month:'short', day:'numeric'}).replace('.','').toUpperCase();
+                        return d.toLocaleDateString('hu-HU', {month:'short', day:'numeric'}).toUpperCase().replace('.', '');
                     };
                     const sStr = fmt(activeRange.start);
                     const eStr = fmt(activeRange.end);
@@ -167,13 +186,15 @@
             const renderZone = (items, fallback, id) => {
                 if (items.length === 0 && !fallback) return '';
                 const displayItems = items.length ? items : [fallback];
-                return `<div id="${id}-carousel" style="min-height: 90px;">
+                return `<div id="${id}-carousel" class="carousel-wrapper">
                     ${displayItems.map((item, idx) => `
-                        <div class="card-container animate-fade" style="${idx > 0 ? 'display:none;' : ''}">
-                            <div class="card-line" style="background: ${item.color}"></div>
-                            <div class="event-name">${esc(item.title)}</div>
-                            <div class="event-range">${item.range}</div>
-                            <div class="event-msg">${esc(item.msg)}</div>
+                        <div class="carousel-item ${idx === 0 ? 'active' : ''}">
+                            <div class="card-container">
+                                <div class="card-line" style="background: ${item.color}"></div>
+                                <div class="event-name">${esc(item.title)}</div>
+                                <div class="event-range">${item.range}</div>
+                                <div class="event-msg">${esc(item.msg)}</div>
+                            </div>
                         </div>`).join('')}
                 </div>`;
             };
@@ -185,19 +206,19 @@
                         ${isPersonalized ? 'VISSZA AZ ALAPHOZ' : 'SAJÁT KERTFIGYELŐT SZERETNÉK!'}
                     </button>
                     
-                    <div class="section-title alert-header">Riasztások</div>
+                    <div class="section-title">Riasztások</div>
                     ${renderZone(alerts, { range: 'Jelenleg', title: 'Minden nyugi', msg: 'Nincs veszély a láthatáron.', color: '#94a3b8' }, 'alert')}
                     
-                    ${windows.length ? '<div class="section-title window-header">Lehetőségek</div>' : ''}
+                    ${windows.length ? '<div class="section-title section-spacer">Lehetőségek</div>' : ''}
                     ${renderZone(windows, null, 'window')}
 
-                    <div class="section-title info-header">Teendők</div>
+                    <div class="section-title section-spacer">Teendők</div>
                     ${renderZone(infos, { range: 'MA', title: 'Pihenj!', msg: 'Élvezd a Mezítlábas Kertedet.', color: '#94a3b8' }, 'info')}
                     
                     <div class="garden-footer">
                         Last updated: ${lastUpdate.toLocaleTimeString('hu-HU', {hour:'2-digit', minute:'2-digit'})}<br>
                         Winter Skin Edition<br>
-                        v3.4.26
+                        v3.4.29
                     </div>
                 </div>`;
 
@@ -218,11 +239,11 @@
                 if (!container) return;
                 let idx = 0;
                 setInterval(() => {
-                    const cards = container.querySelectorAll('.card-container');
-                    if(cards.length > 0) {
-                        cards[idx].style.display = 'none';
-                        idx = (idx + 1) % count;
-                        cards[idx].style.display = 'block';
+                    const items = container.querySelectorAll('.carousel-item');
+                    if (items.length) {
+                        items[idx].classList.remove('active');
+                        idx = (idx + 1) % items.length;
+                        items[idx].classList.add('active');
                     }
                 }, 6000);
             };
