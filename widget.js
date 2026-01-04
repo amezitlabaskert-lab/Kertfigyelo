@@ -6,7 +6,6 @@
     fontLink.rel = 'stylesheet';
     document.head.appendChild(fontLink);
 
-    // Animációs stílusok hozzáadása
     const styleSheet = document.createElement("style");
     styleSheet.textContent = `
         @keyframes gardenPulse {
@@ -14,9 +13,7 @@
             50% { box-shadow: 0 0 0 10px rgba(52, 96, 128, 0); background-color: #437ba3; }
             100% { box-shadow: 0 0 0 0 rgba(52, 96, 128, 0); background-color: #346080; }
         }
-        .garden-btn-animate {
-            animation: gardenPulse 3s infinite ease-in-out;
-        }
+        .garden-btn-animate { animation: gardenPulse 3s infinite ease-in-out; }
     `;
     document.head.appendChild(styleSheet);
 
@@ -85,7 +82,7 @@
         storage.setItem('garden-lon', p.coords.longitude);
         storage.removeItem('garden-weather-cache');
         location.reload();
-    }, (err) => { alert("Kérlek engedélyezd a helyszínt a pontos adatokhoz!"); });
+    }, (err) => { alert("Kérlek engedélyezd a helyszínt!"); });
 
     window.resetLocation = () => { 
         storage.removeItem('garden-lat'); storage.removeItem('garden-lon');
@@ -142,8 +139,8 @@
 
         const finalAlerts = alerts.filter(a => a.type === 'alert');
         const finalInfos = alerts.filter(a => a.type !== 'alert');
-        const alertFallback = [{ dStr: "RIASZTÁSOK", title: "☕ Most minden nyugi", msg: "A Kertfigyelő nem lát veszélyt a láthatáron. Főzz egy kávét!", color: "#346080" }];
-        const infoFallback = [{ dStr: "TEENDŐK", title: "🌿 Pihenj!", msg: "Nincs sürgős kerti munka, élvezd a Mezítlábas Kertedet.", color: "#6691b3" }];
+        const alertFallback = [{ dStr: "RIASZTÁSOK", title: "☕ Most minden nyugi", msg: "A Kertfigyelő nem lát veszélyt a láthatáron.", color: "#346080" }];
+        const infoFallback = [{ dStr: "TEENDŐK", title: "🌿 Pihenj!", msg: "Élvezd a Mezítlábas Kertedet.", color: "#6691b3" }];
         const timeStr = lastUpdate.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' });
 
         const isMobile = window.innerWidth < 1250;
@@ -155,20 +152,20 @@
             <div style="${sidebarStyle} font-family: 'Plus Jakarta Sans', sans-serif;" id="garden-floating-sidebar">
                 <div style="background: #ffffff; padding: 25px; box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.5); border-radius: 0px; border: 1px solid #f1f5f9;">
                     <div style="text-align: center; border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 15px; margin-bottom: 20px;">
-                        <div class="garden-widget-title" style="font-family: 'Dancing Script', cursive; font-size: 3.6em; font-weight: 700; margin: 15px 0; line-height: 1; color: #346080;">
+                        <div class="garden-widget-main-title" style="font-family: 'Dancing Script', cursive; font-size: 3.6em; font-weight: 700; margin: 15px 0; line-height: 1;">
                             ${isPersonalized ? 'Kertfigyelőd' : 'Kertfigyelő'}
                         </div>
                         <button onclick="${isPersonalized ? 'resetLocation()' : 'activateLocalWeather()'}" 
                                 class="${isPersonalized ? '' : 'garden-btn-animate'}"
-                                style="background: ${isPersonalized ? 'transparent' : '#346080'}; border: 1px solid #346080; border-radius: 0px; padding: 12px 14px; font-size: 10px; font-weight: 800; cursor: pointer; color: ${isPersonalized ? '#346080' : 'white'}; text-transform: uppercase; letter-spacing: 1px; transition: all 0.5s; width: 100%;">
+                                style="border: 1px solid #346080; border-radius: 0px; padding: 12px 14px; font-size: 10px; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: all 0.5s; width: 100%;">
                             ${isPersonalized ? 'VISSZA AZ ALAPHOZ' : 'A SAJÁT KERTEM KERTFIGYELŐJÉT SZERETNÉM'}
                         </button>
                     </div>
                     <div id="alert-zone" style="height: 135px; overflow: hidden;"></div>
-                    <div style="height: 25px;"></div>
+                    <div class="garden-separator"></div>
                     <div id="info-zone" style="height: 135px; overflow: hidden;"></div>
-                    <div style="font-size: 8px; color: #6691b3; text-transform: uppercase; letter-spacing: 1px; margin-top: 15px; text-align: center; line-height: 1.6;">
-                        v3.2.6 • Frissítve: ${timeStr}<br>Winter Skin Edition
+                    <div class="garden-footer-text" style="margin-top: 15px; text-align: center; line-height: 1.6;">
+                        v3.2.9 • Frissítve: ${timeStr}<br>Winter Skin Edition
                     </div>
                 </div>
             </div>`;
@@ -183,9 +180,9 @@
                 setTimeout(() => {
                     container.innerHTML = `
                         <div style="border-left: 4px solid ${item.color}; padding-left: 15px; height: 100%; display: flex; flex-direction: column; justify-content: flex-start;">
-                            <div style="font-size: 11px; font-weight: bold; color: ${item.color}; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 0.5px;">${item.dStr}</div>
-                            <div style="font-size: 17px; font-weight: 800; color: #1e293b; line-height: 1.2; margin-bottom: 8px;">${esc(item.title)}</div>
-                            <p style="margin:0; font-size: 13px; line-height: 1.4; color: #475569;">${esc(item.msg)}</p>
+                            <div class="garden-label" style="margin-bottom: 5px;">${item.dStr}</div>
+                            <div class="garden-card-title" style="font-size: 17px; font-weight: 800; line-height: 1.2; margin-bottom: 8px;">${esc(item.title)}</div>
+                            <p class="garden-card-msg" style="margin:0; font-size: 13px; line-height: 1.4;">${esc(item.msg)}</p>
                         </div>`;
                     container.style.opacity = 1;
                     container.style.transform = "translateY(0px)";
