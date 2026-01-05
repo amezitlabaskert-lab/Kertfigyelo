@@ -3,35 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A Mezítlábas Kert - Kertfigyelő</title>
+    <title>Kertfigyelő</title>
     <style>
         body { 
             margin: 0; 
-            padding: 12px; 
+            padding: 20px;
             background: transparent; 
             overflow: hidden; 
-            display: flex;
-            justify-content: flex-start;
-            align-items: flex-start;
-            user-select: none;
-            -webkit-user-select: none;
         }
 
         #smart-garden-widget { 
+            display: inline-block;
             width: 300px; 
             background: #ffffff !important;
             border: none !important;
+            /* A te egyedi keret-stílusod */
             box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.5) !important;
             box-sizing: border-box;
-            height: auto;
             pointer-events: none; 
+            vertical-align: top;
         }
 
         #smart-garden-widget button, 
-        #smart-garden-widget .loc-btn,
-        #smart-garden-widget a {
+        #smart-garden-widget .loc-btn {
             pointer-events: auto !important;
-            cursor: pointer;
+            cursor: pointer !important;
         }
     </style>
 </head>
