@@ -1,5 +1,5 @@
 (async function() {
-    const version = "v3.8.1 - Stable";
+    const version = "v3.8.1 - Stable + badge";
     
     const fontLink = document.createElement('link');
     fontLink.href = 'https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Plus+Jakarta+Sans:wght@400;700;800&display=swap';
