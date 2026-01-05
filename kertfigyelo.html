@@ -7,14 +7,24 @@
     <style>
         body { 
             margin: 0; 
-            padding: 0; 
+            padding: 8px; /* Hely a külső árnyéknak és keretnek */
             background: transparent; 
             overflow: hidden; 
             display: flex;
             justify-content: flex-start;
             align-items: flex-start;
+            font-family: sans-serif;
         }
-        #smart-garden-widget { width: 300px; }
+
+        /* Ez a konténer lesz maga a widget "háza" */
+        #smart-garden-widget { 
+            width: 300px; 
+            min-height: 480px;
+            background: #ffffff !important; /* Fehér háttér */
+            border: 1px solid #eee; /* Finom belső keret */
+            box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.5), 0 4px 15px rgba(0,0,0,0.1); /* A Blogger-stílusú dupla keret */
+            box-sizing: border-box;
+        }
     </style>
 </head>
 <body>
