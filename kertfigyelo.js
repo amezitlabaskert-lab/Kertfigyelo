@@ -21,7 +21,7 @@
         }
 
         .garden-main-card { 
-            background: transparent !important; 
+            background: #ffffff !important;
             padding: 18px;                      
             margin: 0 !important;               
             display: flex; 
@@ -241,6 +241,7 @@
     }
     init();
 })();
+
 
 
 
