@@ -13,13 +13,21 @@
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(71, 85, 105, 0); }
         }
         #kertfigyelo { width: 300px; text-align: left; margin: 0; }
-.garden-main-card { 
+
+        /* Ez a rész került nálad az idézőjelen kívülre, azért látod a képernyőn: */
+        #kertfigyelo button, #kertfigyelo .loc-btn { 
+            pointer-events: auto !important; 
+            cursor: pointer !important; 
+        }
+
+        .garden-main-card { 
             background: transparent !important; 
             padding: 18px;                      
             margin: 0 !important;               
             display: flex; 
             flex-direction: column;
             box-sizing: border-box;
+            height: 480px;
         }
 
         }
@@ -233,6 +241,7 @@
     }
     init();
 })();
+
 
 
 
