@@ -12,7 +12,7 @@
             70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(71, 85, 105, 0); }
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(71, 85, 105, 0); }
         }
-        #smart-garden-widget { width: 300px; text-align: left; margin: 0; }
+        #kertfigyelo { width: 300px; text-align: left; margin: 0; }
         .garden-main-card { 
             background: #ffffff !important; padding: 18px; margin-bottom: 20px !important; 
             box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.5) !important;
@@ -32,7 +32,6 @@
         .card-type-none { background: #94a3b8 !important; }
         .event-name { font-family: 'Plus Jakarta Sans', sans-serif !important; font-weight: 800 !important; font-size: 16px !important; margin-bottom: 2px; color: #1e293b; }
         
-        /* Idő-badge stílusok a jobb UX érdekében */
         .event-range { display: flex; align-items: center; font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 11px !important; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; color: #64748b; }
         .time-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px !important; font-weight: 800; margin-right: 5px; vertical-align: middle; }
         .time-urgent { background: #b91c1c; color: #fff; animation: pulse-invitation 2s infinite; }
@@ -42,7 +41,6 @@
         .event-msg { font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 14px !important; line-height: 1.45; color: #334155; }
         .garden-footer { text-align: center; font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 10px !important; margin-top: auto; padding-top: 8px; line-height: 1.4; border-top: 1px solid rgba(0,0,0,0.05); opacity: 0.6; }
         
-        /* A loc-btn stílusát a CSS-ed winter-skin része felülírja, de itt az alap */
         .loc-btn { 
             width: 100%; cursor: pointer; padding: 10px; font-family: 'Plus Jakarta Sans', sans-serif !important; 
             font-size: 10px; margin-bottom: 5px; text-transform: uppercase; font-weight: 800; border: none; 
@@ -102,7 +100,6 @@
         if (!widgetDiv) return;
         
         try {
-            // Isaszeg koordináták: 47.5136, 19.3735
             let lat = 47.5136, lon = 19.3735, isPers = false;
             const sLat = localStorage.getItem('garden-lat'), sLon = localStorage.getItem('garden-lon');
             if (sLat && sLon) { lat = Number(sLat); lon = Number(sLon); isPers = true; }
@@ -232,6 +229,7 @@
     }
     init();
 })();
+
 
 
 
