@@ -12,7 +12,7 @@
             70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(71, 85, 105, 0); }
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(71, 85, 105, 0); }
         }
-        #smart-garden-widget { width: 300px; text-align: left; margin: 0 auto; }
+        #smart-garden-widget { width: 300px; text-align: left; margin: 0; }
         .garden-main-card { 
             background: #ffffff !important; padding: 18px; margin-bottom: 20px !important; 
             box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.5) !important;
@@ -232,3 +232,4 @@
     }
     init();
 })();
+
