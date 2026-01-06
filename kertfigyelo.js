@@ -2,7 +2,6 @@
     const CACHE_VERSION = 'v4.5.5'; 
     const RAIN_THRESHOLD = 8; // mm
 
-    // --- STÍLUSOK (v4.5.5) ---
     const fontLink = document.createElement('link');
     fontLink.href = 'https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Plus+Jakarta+Sans:wght@400;700;800&display=swap';
     fontLink.rel = 'stylesheet';
@@ -44,7 +43,6 @@
 
     const noon = d => new Date(d).setHours(12,0,0,0);
 
-    // --- DINAMIKUS ÜZENETKEZELŐ (v4.5.5 - Hó támogatással) ---
     function processMessage(msg, weather, dryDays) {
         if (!msg) return "";
         try {
@@ -78,7 +76,6 @@
         ).join('');
     }
 
-    // --- FELTÉTEL ELLENŐRZŐ (v4.5.5 - Hó feltétel hozzáadva) ---
     function checkCondition(weather, idx, key, val, dryDays) {
         const d = weather.daily;
         if (key === 'temp_max_below') return d.temperature_2m_max[idx] <= val;
@@ -92,12 +89,10 @@
         return true;
     }
 
-    // --- TARTÓS ÁLLAPOT ELLENŐRZŐ (Aszály vs Trend logika) ---
     function checkSustained(weather, dayIdx, cond, dryDays) {
         if (cond.days_min !== undefined && dryDays < cond.days_min) return false;
         const days = (cond.days_min && !cond.temp_above) ? 1 : (cond.days_min || 1);
         if (dayIdx < days - 1) return false;
-        
         for (const key in cond) {
             if (key === 'days_min') continue; 
             const results = [];
@@ -141,7 +136,6 @@
             const lastRain = localStorage.getItem('last_rain_date');
             const dryDays = lastRain ? Math.floor(Math.abs(new Date() - new Date(lastRain)) / 86400000) : 0;
 
-            // --- CACHE BURNER A JSON FÁJLHOZ ---
             const rules = await (await fetch('https://raw.githack.com/amezitlabaskert-lab/kertfigyelo/main/kertfigyelo_esemenyek.json?v=' + Date.now())).json();
             const rawResults = [];
 
@@ -155,7 +149,6 @@
                         const sDate = new Date(d.getFullYear(), sM-1, sD), eDate = new Date(d.getFullYear(), eM-1, eD);
                         return eDate < sDate ? (d >= sDate || d <= eDate) : (d >= sDate && d <= eDate);
                     });
-                    
                     if (inSeason && checkSustained(weather, i, rule.conditions || {}, dryDays)) {
                         if (!range) range = { start: d, end: d }; else range.end = d;
                     } else if (range) break;
@@ -174,17 +167,14 @@
                 let label = diff < 0 ? "FOLYAMATBAN" : (diff === 0 ? "MA" : diff + " NAP MÚLVA");
                 if (item.category === "seasonal") label = "SZEZONÁLIS";
                 if (item.category === "check") label = "VISSZATEKINTŐ";
-                
                 if (item.id.includes('aszaly') && dryDays >= 7) {
                     label = dryDays >= 14 ? `${Math.floor(dryDays/7)} HETE TART` : `${dryDays} NAPJA TART`;
                 }
-
                 const badgeClass = item.category === "seasonal" ? 'type-szezon' : (item.category === "check" ? 'type-szemle' : (diff <= 0 ? 'time-urgent' : (diff === 1 ? 'time-warning' : 'time-soon')));
                 let rangeStr = `<span class="time-badge ${badgeClass}">${label}</span>`;
                 if (!["seasonal", "check"].includes(item.category) && noon(item.start) !== noon(item.end)) {
                     rangeStr += ` — ${new Date(item.end).toLocaleDateString('hu-HU',{month:'short',day:'numeric'}).toUpperCase()}`;
                 }
-
                 return { title: item.name, range: rangeStr, msg: processMessage(item.message, weather, dryDays), type: item.type };
             };
 
@@ -197,7 +187,7 @@
                 <button id="locBtn" class="loc-btn">${isPers ? 'Vissza az alaphoz' : 'Saját kertfigyelőt!'}</button>
                 <div class="section-title">Riasztások</div>${renderZone(alerts, 'alert')}
                 <div class="section-title">Teendők & Info</div>${renderZone(others, 'tasks')}
-                <div class="garden-footer">Helyszín: ${isPers ? 'Egyedi kert' : 'Mezítlábas Kert bázisa'}<br>Frissítve: ${lastUpdate.toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})}</div>
+                <div class="garden-footer">Helyszín: ${isPers ? 'Egyedi kert' : 'A Mezítlábas Kert bázisa'}<br>Frissítve: ${lastUpdate.toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})} | ${CACHE_VERSION}</div>
             </div>`;
 
             document.getElementById('locBtn').onclick = () => {
@@ -239,6 +229,5 @@
                 </div>
             </div>`).join('')}</div>`;
     }
-
     init();
 })();
