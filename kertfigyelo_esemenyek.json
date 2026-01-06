@@ -60,14 +60,11 @@
     "conditions": { "rain_min_any": 15, "days_min": 2 }
   },
   {
-  "name": "🔎 Havazás utáni szemle",
-  "message": "Nagyobb havazás volt. Ellenőrizd az örökzöldeket hónyomás miatt!",
-  "type": "info",
-  "conditions": { 
-      "snow_min_any": 5, 
-      "days_min": 2 
-  }
-}
+    "name": "🔎 Havazás utáni szemle",
+    "message": "Nagyobb havazás volt. Ellenőrizd az örökzöldeket hónyomás miatt!",
+    "type": "info",
+    "conditions": { "snow_min_any": 5, "days_min": 2 }
+  },
   {
     "id": "extrem-hoseg",
     "name": "🌡️ Extrém Hőség",
@@ -138,5 +135,3 @@
     "message": "Ideális idő a lemosó permetezéshez: szélcsend, fagymentesség és száraz növényzet."
   }
 ]
-
-
