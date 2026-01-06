@@ -60,6 +60,12 @@
     "conditions": { "rain_min_any": 15, "days_min": 2 }
   },
   {
+    "name": "🔎 Havazás utáni szemle",
+    "message": "Nagyobb havazás volt. Ellenőrizd az örökzöldeket hónyomás miatt!",
+    "type": "info",
+    "conditions": { "rain_min_any": 5, "temp_max_below": 2, "days_min": 2 }
+  },
+  {
     "id": "extrem-hoseg",
     "name": "🌡️ Extrém Hőség",
     "type": "alert",
