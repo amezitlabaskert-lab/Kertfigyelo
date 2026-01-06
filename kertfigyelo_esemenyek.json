@@ -30,17 +30,17 @@
     "message": "Erős fagyok várhatók (-10°C)! Ellenőrizd az érzékenyebb növények takarását!"
   },
   {
-  "id": "teli-aszaly-veszely",
-  "name": "⚠️ Téli aszály riadó",
-  "type": "alert",
-  "conditions": { 
-    "temp_max_below": -1, 
-    "snow_max_any": 2,
-    "wind_gusts_min_any": 30,
-    "days_min": 3 
+    "id": "teli-aszaly-veszely",
+    "name": "⚠️ Téli aszály riadó",
+    "type": "alert",
+    "conditions": { 
+      "temp_max_below": -1, 
+      "snow_max_any": 2,
+      "wind_gusts_min_any": 30,
+      "days_min": 3 
+    },
+    "message": "Téli aszály: nincs hó, tartós a fagy és szeles az idő. Az örökzöldek (tuja, babérmeggy) szövetei száradnak! Az első fagymentes napon alaposan öntözd meg őket!"
   },
-  "message": "Téli aszály: nincs hó, tartós a fagy és szeles az idő. Az örökzöldek (tuja, babérmeggy) szövetei száradnak! Az első fagymentes napon alaposan öntözd meg őket!"
-}
   {
     "id": "honyomas-veszely",
     "name": "❄️ Hónyomás riadó",
@@ -184,4 +184,3 @@
     "message": "Lassulj le az őszi fényekkel. Gyűjtsd az őszi színeket!"
   }
 ]
-
