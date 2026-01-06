@@ -44,22 +44,25 @@
     "message": "Jelentős friss hó esett! Rázd le a havat az örökzöldekről és a tujákról, mielőtt letörnek az ágak!"
   },
   {
+    "id": "szemle-havazas",
     "name": "🔎 Havazás utáni szemle",
-    "message": "Hó esett vagy maradt a közelmúltban. Ellenőrizd a növényeket hónyomás miatt!",
     "type": "info",
-    "conditions": { "snow_min_any": 1, "days_min": 2 }
+    "conditions": { "snow_min_any": 1, "days_min": 2 },
+    "message": "Hó esett vagy maradt a közelmúltban. Ellenőrizd a növényeket hónyomás miatt!"
   },
   {
+    "id": "szemle-eso",
     "name": "🔎 Eső utáni szemle",
-    "message": "Jelentős eső esett az elmúlt napokban. Ellenőrizd a vízelvezetést!",
     "type": "info",
-    "conditions": { "rain_min_any": 15, "days_min": 2 }
+    "conditions": { "rain_min_any": 15, "days_min": 2 },
+    "message": "Jelentős eső esett az elmúlt napokban. Ellenőrizd a vízelvezetést!"
   },
   {
+    "id": "szemle-szel",
     "name": "🔎 Szél utáni szemle",
-    "message": "Erős szél volt az elmúlt napokban. Nézz rá a támrendszerekre!",
     "type": "info",
-    "conditions": { "wind_min_any": 40, "days_min": 2 }
+    "conditions": { "wind_min_any": 40, "days_min": 2 },
+    "message": "Erős szél volt az elmúlt napokban. Nézz rá a támrendszerekre!"
   },
   {
     "id": "madaretetes-szezon",
@@ -73,7 +76,7 @@
     "id": "madaretetes-ho",
     "name": "❄️ Kritikus etetés",
     "type": "alert",
-    "conditions": { "snow_depth_any": 1 },
+    "conditions": { "snow_min_any": 1 },
     "message": "Hótakaró fedi a tájat, a madarak nem találnak táplálékot a földön. Tegyél ki eleséget!"
   },
   {
@@ -148,28 +151,31 @@
     "message": "Már 5 napja tart a hőség érdemi eső nélkül. Kritikus vízhiány a talajban!"
   },
   {
+    "id": "szezon-tel",
     "name": "☕ Téli álom",
-    "message": "Tea, takaró és tervezgetés. A kert is pihen.",
     "type": "none",
-    "seasons": [{ "start": "12-01", "end": "02-28" }]
+    "seasons": [{ "start": "12-01", "end": "02-28" }],
+    "message": "Tea, takaró és tervezgetés. A kert is pihen."
   },
   {
+    "id": "szezon-tavasz",
     "name": "🌱 Ébredező kert",
-    "message": "Figyeld az első rügyeket! Kezdődik a tavaszi zsongás.",
     "type": "none",
-    "seasons": [{ "start": "03-01", "end": "05-31" }]
+    "seasons": [{ "start": "03-01", "end": "05-31" }],
+    "message": "Figyeld az első rügyeket! Kezdődik a tavaszi zsongás."
   },
   {
+    "id": "szezon-nyar",
     "name": "🐚 Mezítlábas idő",
-    "message": "Élvezd a füvet a talpad alatt! Ideális kerti idő van.",
     "type": "none",
-    "seasons": [{ "start": "06-01", "end": "08-31" }]
+    "seasons": [{ "start": "06-01", "end": "08-31" }],
+    "message": "Élvezd a füvet a talpad alatt! Ideális kerti idő van."
   },
   {
+    "id": "szezon-osz",
     "name": "🎨 Színkavalkád",
-    "message": "Lassulj le az őszi fényekkel. Gyűjtsd az őszi színeket!",
     "type": "none",
-    "seasons": [{ "start": "09-01", "end": "11-30" }]
+    "seasons": [{ "start": "09-01", "end": "11-30" }],
+    "message": "Lassulj le az őszi fényekkel. Gyűjtsd az őszi színeket!"
   }
 ]
-
