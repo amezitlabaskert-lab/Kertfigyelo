@@ -65,7 +65,7 @@
   "type": "info",
   "conditions": { 
       "snow_min_any": 5, 
-      "days_min": 1 
+      "days_min": 2 
   }
 }
   {
@@ -138,4 +138,5 @@
     "message": "Ideális idő a lemosó permetezéshez: szélcsend, fagymentesség és száraz növényzet."
   }
 ]
+
 
