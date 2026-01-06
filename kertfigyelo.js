@@ -1,5 +1,5 @@
 (async function() {
-    const CACHE_VERSION = 'v4.5.5'; 
+    const CACHE_VERSION = 'v4.5.6'; 
     const RAIN_THRESHOLD = 8; // mm
 
     const fontLink = document.createElement('link');
@@ -80,21 +80,42 @@
         const d = weather.daily;
         if (key === 'temp_max_below') return d.temperature_2m_max[idx] <= val;
         if (key === 'temp_min_below' || key === 'temp_below') return d.temperature_2m_min[idx] <= val;
+        if (key === 'temp_min_above') return d.temperature_2m_min[idx] >= val; // FIX 4
         if (key === 'temp_above') return d.temperature_2m_max[idx] >= val;
         if (key.startsWith('rain_min')) return d.precipitation_sum[idx] >= val;
         if (key.startsWith('rain_max')) return d.precipitation_sum[idx] <= val;
         if (key.includes('wind_gusts')) return d.wind_gusts_10m_max[idx] >= val;
+        if (key === 'wind_max') return d.wind_speed_10m_max[idx] <= val; // FIX 3
         if (key.includes('snow')) return d.snowfall_sum[idx] >= val;
         if (key === 'days_min') return dryDays >= val;
+        if (key === 'days_max') return dryDays <= val;
         return true;
     }
 
-    function checkSustained(weather, dayIdx, cond, dryDays) {
+    function checkSustained(weather, dayIdx, rule, dryDays) {
+        const cond = rule.conditions || {};
+        
+        // SPECIÁLIS SZEMLE KEZELÉS (Category Check)
+        if (rule.category === 'check') {
+            // Visszanézünk ma (idx) és tegnap (idx-1)
+            for (let i = 0; i <= 1; i++) {
+                const cIdx = dayIdx - i;
+                if (cIdx < 0) continue;
+                let match = true;
+                for (const key in cond) {
+                    if (!checkCondition(weather, cIdx, key, cond[key], dryDays)) match = false;
+                }
+                if (match) return true;
+            }
+            return false;
+        }
+
+        // NORMÁL LOGIKA
         if (cond.days_min !== undefined && dryDays < cond.days_min) return false;
         const days = (cond.days_min && !cond.temp_above) ? 1 : (cond.days_min || 1);
         if (dayIdx < days - 1) return false;
         for (const key in cond) {
-            if (key === 'days_min') continue; 
+            if (key === 'days_min' || key === 'days_max') continue; 
             const results = [];
             for (let j = 0; j < days; j++) {
                 results.push(checkCondition(weather, dayIdx - j, key, cond[key], dryDays));
@@ -142,6 +163,7 @@
             rules.forEach(rule => {
                 if (!rule.id) return;
                 let range = null;
+                // Csak a maira és jövőre vizsgálunk (idx >= 7), de a checkSustained visszanézhet
                 for (let i = todayIdx; i < weather.daily.time.length; i++) {
                     const d = new Date(weather.daily.time[i]);
                     const inSeason = !rule.seasons || rule.seasons.some(s => {
@@ -149,7 +171,7 @@
                         const sDate = new Date(d.getFullYear(), sM-1, sD), eDate = new Date(d.getFullYear(), eM-1, eD);
                         return eDate < sDate ? (d >= sDate || d <= eDate) : (d >= sDate && d <= eDate);
                     });
-                    if (inSeason && checkSustained(weather, i, rule.conditions || {}, dryDays)) {
+                    if (inSeason && checkSustained(weather, i, rule, dryDays)) {
                         if (!range) range = { start: d, end: d }; else range.end = d;
                     } else if (range) break;
                 }
