@@ -1,5 +1,5 @@
 (async function() {
-    // 1. Fontok betöltése
+    // 1. Fontok
     const fontLink = document.createElement('link');
     fontLink.href = 'https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Plus+Jakarta+Sans:wght@400;700;800&display=swap';
     fontLink.rel = 'stylesheet';
@@ -19,43 +19,37 @@
         .garden-main-card { 
             background: #ffffff !important;
             padding: 18px;                      
-            margin: 0 !important;               
             display: flex; 
             flex-direction: column;
             box-sizing: border-box;
-            height: 480px;
+            height: 540px; 
         }
 
         .garden-title { font-family: 'Dancing Script', cursive !important; font-size: 3.6em !important; font-weight: 700 !important; text-align: center !important; margin: 5px 0 12px 0 !important; line-height: 1.1; color: #1a1a1a; }
         .section-title { font-family: 'Plus Jakarta Sans', sans-serif !important; font-weight: 800 !important; font-size: 14px !important; text-transform: uppercase; letter-spacing: 1.2px; margin: 12px 0 8px 0; padding-bottom: 4px; border-bottom: 1px solid rgba(0,0,0,0.06); color: #64748b; }
         
-        .carousel-wrapper { position: relative; height: 125px; margin-bottom: 5px; overflow: hidden; }
+        .carousel-wrapper { position: relative; height: 165px; margin-bottom: 5px; overflow: hidden; }
         .carousel-item { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; visibility: hidden; transition: opacity 1.2s ease-in-out; }
-        .carousel-item.active { opacity: 1; visibility: visible; }
+        .carousel-item.active { opacity: 1; visibility: visible; display: flex; flex-direction: column; justify-content: center; }
         
-        .card-container { position: relative; padding-left: 14px; height: 100%; }
+        .card-container { position: relative; padding-left: 14px; width: 100%; box-sizing: border-box; }
         .card-line { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
         .card-type-alert { background: #b91c1c !important; }
         .card-type-window { background: #2d6a4f !important; }
         .card-type-info { background: #6691b3 !important; }
         .card-type-none { background: #94a3b8 !important; }
         
-        .event-name { font-family: 'Plus Jakarta Sans', sans-serif !important; font-weight: 800 !important; font-size: 16px !important; margin-bottom: 2px; color: #1e293b; }
-        .event-range { display: flex; align-items: center; font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 11px !important; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; color: #64748b; }
+        .event-name { font-family: 'Plus Jakarta Sans', sans-serif !important; font-weight: 800 !important; font-size: 16px !important; margin-bottom: 2px; color: #1e293b; line-height: 1.2; }
+        .event-range { display: flex; align-items: center; font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 11px !important; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; color: #64748b; }
         
-        .time-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px !important; font-weight: 800; margin-right: 5px; vertical-align: middle; }
-        .time-urgent { background: #b91c1c; color: #fff; animation: pulse-invitation 2s infinite; }
-        .time-warning { background: #ea580c; color: #fff; }
-        .time-soon { background: #64748b; color: #fff; }
+        .time-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px !important; font-weight: 800; margin-right: 5px; }
 
         .event-msg { 
             font-family: 'Plus Jakarta Sans', sans-serif !important; 
             font-size: 14px !important; 
-            line-height: 1.5; 
+            line-height: 1.45; 
             color: #334155;
             text-align: left;
-            white-space: pre-line;
-            word-wrap: break-word;
         }
 
         .garden-footer { text-align: center; font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 10px !important; margin-top: auto; padding-top: 8px; line-height: 1.4; border-top: 1px solid rgba(0,0,0,0.05); opacity: 0.6; }
@@ -63,10 +57,8 @@
         .loc-btn { 
             width: 100%; cursor: pointer; padding: 10px; font-family: 'Plus Jakarta Sans', sans-serif !important; 
             font-size: 10px; margin-bottom: 5px; text-transform: uppercase; font-weight: 800; border: none; 
-            background: #475569; color: white; transition: background 0.3s;
-            animation: pulse-invitation 3s infinite ease-in-out;
+            background: #475569; color: white; animation: pulse-invitation 3s infinite ease-in-out;
         }
-        .loc-btn:hover { background: #1e293b; animation-play-state: paused; }
     `;
     document.head.appendChild(styleSheet);
 
@@ -76,15 +68,15 @@
         const isSpring = month >= 3 && month <= 5;
         const isSummer = month >= 6 && month <= 8;
         if (type === 'alert') {
-            if (isWinter) return { range: "TÉL", title: "🛡️ Biztonságos pihenés", msg: "A kemény fagyok elkerülik a kertet.", type: "none" };
-            if (isSpring) return { range: "TAVASZ", title: "🌤️ Kedvező ébredés", msg: "Nincs fagyveszély a láthatáron.", type: "none" };
-            if (isSummer) return { range: "NYÁR", title: "🧊 Kellemes klíma", msg: "Nincs hőségriadó, élvezd a kertet!", type: "none" };
-            return { range: "ŐSZ", title: "☁️ Szelíd ősz", msg: "Viharmentes, nyugodt időjárás.", type: "none" };
+            if (isWinter) return { range: "TÉL", title: "🛡️ Biztonságos pihenés", msg: "A kemény fagyok elkerülik a kertet. Nyugodt az időjárás.", type: "none" };
+            if (isSpring) return { range: "TAVASZ", title: "🌤️ Kedvező ébredés", msg: "Nincs fagyveszély a láthatáron. Ébredezik a természet.", type: "none" };
+            if (isSummer) return { range: "NYÁR", title: "🧊 Kellemes klíma", msg: "Nincs hőségriadó. Élvezd a kertet!", type: "none" };
+            return { range: "ŐSZ", title: "☁️ Szelíd ősz", msg: "Viharmentes, nyugodt időjárás. Szép fények várhatók.", type: "none" };
         } else {
             if (isWinter) return { range: "TÉL", title: "☕ Téli álom", msg: "Tea, takaró és tervezgetés. A kert is pihen.", type: "none" };
-            if (isSpring) return { range: "TAVASZ", title: "🌱 Ébredező kert", msg: "Figyeld az első rügyeket!", type: "none" };
-            if (isSummer) return { range: "NYÁR", title: "☀️ Mezítlábas idő", msg: "Élvezd a füvet a talpad alatt!", type: "none" };
-            return { range: "ŐSZ", title: "🍂 Színkavalkád", msg: "Lassulj le az őszi fényekkel.", type: "none" };
+            if (isSpring) return { range: "TAVASZ", title: "🌱 Ébredező kert", msg: "Figyeld az első rügyeket! Kezdődik a tavaszi zsongás.", type: "none" };
+            if (isSummer) return { range: "NYÁR", title: "☀️ Mezítlábas idő", msg: "Élvezd a füvet a talpad alatt! Ideális kerti idő van.", type: "none" };
+            return { range: "ŐSZ", title: "🍂 Színkavalkád", msg: "Lassulj le az őszi fényekkel. Gyűjtsd az őszi színeket!", type: "none" };
         }
     };
 
@@ -107,8 +99,7 @@
             const isAny = key.endsWith('_any');
             const dayResults = [];
             for (let j = 0; j < days; j++) dayResults.push(checkCondition(key, dayIdx - j));
-            const ok = isAny ? dayResults.some(r => r) : dayResults.every(r => r);
-            if (!ok) return false;
+            if (!(isAny ? dayResults.some(r => r) : dayResults.every(r => r))) return false;
         }
         return true;
     }
@@ -177,26 +168,37 @@
                         }
                         return date.toLocaleDateString('hu-HU', {month:'short', day:'numeric'}).toUpperCase().replace('.','');
                     };
-                    const dateRangeStr = (noon(range.start) !== noon(range.end)) 
-                        ? fmt(range.start, true) + ' — ' + fmt(range.end, false)
-                        : fmt(range.start, true);
-
+                    const dateRangeStr = (noon(range.start) !== noon(range.end)) ? fmt(range.start, true) + ' — ' + fmt(range.end, false) : fmt(range.start, true);
                     results.push({ range: dateRangeStr, title: rule.name, msg: rule.message, type: rule.type });
                 }
             });
-            
+
+            // ÚJ: OKOS RENDERZÓNA (Kötőszó-ragasztó + Mondat-blokkok)
             const renderZone = (items, fallback, id) => {
                 const display = items.length ? items : (fallback ? [fallback] : []);
                 if (!display.length) return '';
                 return `<div id="${id}-carousel" class="carousel-wrapper">${display.map((item, idx) => {
-                    const smartMsg = item.msg.replace(/([.!?])\s+/g, '$1\n');
+                    
+                    // Kötőszavak összeragasztása a következő szóval (\u00A0 = nem törhető szóköz)
+                    let stickyMsg = item.msg.replace(/ (a|az|is|s|e|de|ha|ne) /gi, ' $1\u00A0');
+                    
+                    // Mondatok szétszedése és blokkosítása
+                    const sentenceParts = stickyMsg.split(/([.!?])\s+/);
+                    let formattedHtml = "";
+                    for (let i = 0; i < sentenceParts.length; i += 2) {
+                        if (sentenceParts[i]) {
+                            const punc = sentenceParts[i+1] || "";
+                            formattedHtml += `<span style="display:block; margin-bottom:5px;">${sentenceParts[i]}${punc}</span>`;
+                        }
+                    }
+
                     return `
                     <div class="carousel-item ${idx === 0 ? 'active' : ''}">
                         <div class="card-container">
                             <div class="card-line card-type-${item.type}"></div>
                             <div class="event-name">${item.title}</div>
                             <div class="event-range">${item.range}</div>
-                            <div class="event-msg">${smartMsg}</div>
+                            <div class="event-msg">${formattedHtml}</div>
                         </div>
                     </div>`;
                 }).join('')}</div>`;
@@ -205,14 +207,14 @@
             widgetDiv.innerHTML = `
                 <div class="garden-main-card">
                     <div class="garden-title">${isPers ? 'Kertfigyelőd' : 'Kertfigyelő'}</div>
-                    <button id="locBtn" class="loc-btn">${isPers ? 'Vissza az alaphoz' : 'Saját kertfigyelőt szeretnék!'}</button>
+                    <button id="locBtn" class="loc-btn">${isPers ? 'Vissza az alaphoz' : 'Saját kertfigyelőt!'}</button>
                     <div class="section-title">Riasztások</div>
                     ${renderZone(results.filter(r => r.type === 'alert'), getSeasonalFallback('alert'), 'alert')}
                     ${results.some(r => r.type === 'window') ? '<div class="section-title">Lehetőségek</div>' : ''}
                     ${renderZone(results.filter(r => r.type === 'window'), null, 'window')}
                     <div class="section-title">Teendők</div>
                     ${renderZone(results.filter(r => r.type !== 'alert' && r.type !== 'window'), getSeasonalFallback('info'), 'info')}
-                    <div class="garden-footer">Last updated: ${lastUpdate.toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})}<br>v3.6.8 - UX Edition</div>
+                    <div class="garden-footer">Last updated: ${lastUpdate.toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})}<br>v3.6.8 - Smart Edition</div>
                 </div>`;
 
             document.getElementById('locBtn').onclick = () => {
