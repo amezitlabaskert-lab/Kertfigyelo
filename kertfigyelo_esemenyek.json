@@ -33,26 +33,71 @@
     "id": "tartos-nappali-zord-fagy",
     "name": "🥶 Zord nappali fagy",
     "type": "alert",
-    "conditions": { "temp_max_below": -5, "days_min": 1 },
-    "message": "A hőmérséklet napközben sem emelkedik -5°C fölé. Vigyázz a kinti csapokra!"
+    "conditions": { "temp_max_below": -1, "days_min": 1 },
+    "message": "A hőmérséklet napközben sem emelkedik fagypont fölé. Vigyázz a kinti csapokra!"
+  },
+  {
+    "id": "honyomas-veszely",
+    "name": "❄️ Hónyomás riadó",
+    "type": "alert",
+    "conditions": { "snow_min_any": 5 },
+    "message": "Jelentős friss hó esett! Rázd le a havat az örökzöldekről és a tujákról, mielőtt letörnek az ágak!"
   },
   {
     "name": "🔎 Havazás utáni szemle",
-    "message": "Hó esett a közelmúltban. Ellenőrizd az örökzöldeket hónyomás miatt!",
+    "message": "Hó esett vagy maradt a közelmúltban. Ellenőrizd az örökzöldeket!",
     "type": "info",
-    "conditions": { "snow_min_any": 1, "days_min": 2 }
+    "conditions": { "snow_depth_any": 1, "days_min": 2 }
   },
   {
     "name": "🔎 Eső utáni szemle",
-    "message": "Jelentős eső esett az elmúlt napokban. Ellenőrizd a vízelvezetést és a cserepeseket!",
+    "message": "Jelentős eső esett az elmúlt napokban. Ellenőrizd a vízelvezetést!",
     "type": "info",
     "conditions": { "rain_min_any": 15, "days_min": 2 }
   },
   {
     "name": "🔎 Szél utáni szemle",
-    "message": "Erős szél volt az elmúlt napokban. Nézz rá a támrendszerekre és a kötözésekre!",
+    "message": "Erős szél volt az elmúlt napokban. Nézz rá a támrendszerekre!",
     "type": "info",
     "conditions": { "wind_min_any": 40, "days_min": 2 }
+  },
+  {
+    "id": "madaretetes-szezon",
+    "name": "🐦 Madáretetés",
+    "type": "info",
+    "seasons": [{ "start": "11-15", "end": "03-15" }],
+    "conditions": { "temp_below": 2 },
+    "message": "Beköszöntött a hideg. Töltsd fel az etetőket napraforgómaggal és almával!"
+  },
+  {
+    "id": "madaretetes-ho",
+    "name": "❄️ Kritikus etetés",
+    "type": "alert",
+    "conditions": { "snow_depth_any": 1 },
+    "message": "Hótakaró fedi a tájat, a madarak nem találnak táplálékot a földön. Pótold az eleséget!"
+  },
+  {
+    "id": "madaritatas-tel",
+    "name": "💧 Téli itatás",
+    "type": "alert",
+    "seasons": [{ "start": "11-01", "end": "03-15" }],
+    "conditions": { "temp_min_below": 0 },
+    "message": "Fagyos idő van! A természetes vizek befagytak. Cseréld langyosra a vizet az itatókban!"
+  },
+  {
+    "id": "madaretetes-stop",
+    "name": "🚫 Etetés leállítása",
+    "type": "alert",
+    "seasons": [{ "start": "03-20", "end": "04-15" }],
+    "message": "Itt a költési szezon! Ne etess tovább magvakkal, mert a fiókák belepusztulhatnak. Hagyd a szülőket rovarozni!"
+  },
+  {
+    "id": "madaritatas-nyar",
+    "name": "💧 Nyári itatás",
+    "type": "info",
+    "seasons": [{ "start": "06-01", "end": "08-31" }],
+    "conditions": { "temp_above": 30 },
+    "message": "Kánikula van. Frissítsd a vizet a madáritatóban és tegyél bele kavicsokat a méheknek is!"
   },
   {
     "id": "lemoso-permetezes",
@@ -68,7 +113,7 @@
     "type": "info",
     "seasons": [{ "start": "04-01", "end": "05-20" }],
     "conditions": { "temp_above": 12 },
-    "message": "A levéltetvek ébredeznek a melegedő időben, de a katicáknak még túl hideg lehet! Tartsd a szemed a friss hajtásokon!"
+    "message": "A levéltetvek ébredeznek, de a katicáknak még hideg van! Figyeld a friss hajtásokat!"
   },
   {
     "id": "katica-aktivalodas",
@@ -76,7 +121,7 @@
     "type": "info",
     "seasons": [{ "start": "04-01", "end": "06-30" }],
     "conditions": { "temp_above": 15 },
-    "message": "Megérkezett a tartós meleg, a katicák is aktivizálódnak és segítenek a levéltetvek elleni harcban."
+    "message": "A katicák aktivizálódnak és segítenek a levéltetvek elleni harcban."
   },
   {
     "id": "boroka-diszbogar-rajzas",
@@ -84,7 +129,7 @@
     "type": "alert",
     "seasons": [{ "start": "06-01", "end": "07-15" }],
     "conditions": { "temp_above": 24, "days_min": 2 },
-    "message": "A díszbogarak rajzásának kezdete mostanában várható. Figyeld a borókákat, tujákat és ciprusokat!"
+    "message": "A díszbogarak rajzása várható. Figyeld a borókákat, tujákat és ciprusokat!"
   },
   {
     "id": "extrem-hoseg",
@@ -95,20 +140,12 @@
     "message": "35°C feletti hőség! Perzselő nap, védekezz mélyöntözéssel!"
   },
   {
-    "id": "kanikula-tartos",
-    "name": "🥵 Kánikula",
-    "type": "alert",
-    "seasons": [{ "start": "06-15", "end": "08-31" }],
-    "conditions": { "temp_above": 30, "days_min": 2 },
-    "message": "Tartós hőség. A talaj kezdhet kiszáradni, figyelj a vízpótlásra!"
-  },
-  {
     "id": "nyari-aszaly-pro",
     "name": "🔥 Aszályriadó",
     "type": "alert",
     "seasons": [{ "start": "06-01", "end": "08-31" }],
     "conditions": { "temp_above": 28, "rain_max": 3, "days_min": 5 },
-    "message": "Már 5 napja tart a hőség érdemi csapadék nélkül. Kritikus vízhiány várható a talajban!"
+    "message": "Már 5 napja tart a hőség érdemi eső nélkül. Kritikus vízhiány a talajban!"
   },
   {
     "name": "☕ Téli álom",
