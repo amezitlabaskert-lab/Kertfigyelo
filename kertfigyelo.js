@@ -209,7 +209,7 @@
             const setup = (id, len) => {
                 if (len <= 1) return;
                 const items = document.querySelectorAll(`#${id}-carousel .carousel-item`);
-                let i = 0; setInterval(() => { if(items[i]) items[i].classList.remove('active'); i = (i + 1) % len; if(items[i]) items[i].classList.add('active'); }, 6000);
+                let i = 0; setInterval(() => { if(items[i]) items[i].classList.remove('active'); i = (i + 1) % len; if(items[i]) items[i].classList.add('active'); }, 8000);
             };
             setup('alert', alerts.length); setup('tasks', others.length);
         } catch(e) { 
@@ -219,3 +219,4 @@
     }
     init();
 })();
+
