@@ -202,7 +202,7 @@
     "category": "seasonal",
     "seasons": [ { "start": "06-01", "end": "07-15" } ],
     "conditions": { "temp_above": 24, "days_min": 2 },
-    "message": "A díszbogarak rajzása várható. Figyeld a borókákat és tujákat!"
+    "message": "A díszbogarak rajzása várható. Figyeld a borókák és tuják napsütötte oldalát!"
   },
   {
     "_comment": "19.",
@@ -211,7 +211,7 @@
     "type": "info",
     "category": "seasonal",
     "seasons": [ { "start": "06-15", "end": "07-05" } ],
-    "message": "Varázslat az éjszakában: nézz körül sötétedés után, hátha látsz lámpásokat a fűben!"
+    "message": "Varázslat az éjszakában: nézz körül sötétedés után, hátha látsz lámpásokat!"
   },
   {
     "_comment": "=== 3. KERTI MUNKÁK (WINDOW) ==="
@@ -234,7 +234,7 @@
     "category": "weather",
     "seasons": [ { "start": "02-15", "end": "03-31" } ],
     "conditions": { "temp_min_above": 0, "rain_max": 0 },
-    "message": "Fagymentes, száraz idő: ideális a fák és cserjék metszéséhez. A sebek most gyorsan gyógyulnak!"
+    "message": "Fagymentes, száraz idő: ideális a fák és cserjék metszéséhez."
   },
   {
     "_comment": "22.",
@@ -263,7 +263,7 @@
   {
     "_comment": "24.",
     "id": "nyari-gyep-tap",
-    "name": "☀️ Nyári gyeptrágya",
+    "name": "🌱 Nyári gyeptrágya",
     "type": "window",
     "group": "lawn_care",
     "priority": 5,
@@ -275,7 +275,7 @@
   {
     "_comment": "25.",
     "id": "oszi-gyep-tap",
-    "name": "🍂 Őszi gyeptrágya",
+    "name": "🌱 Őszi gyeptrágya",
     "type": "window",
     "group": "lawn_care",
     "priority": 5,
@@ -364,4 +364,5 @@
     "message": "Tökéletes, szélcsendes este a kerti kikapcsolódáshoz. Élvezd a kerted gyümölcsét!"
   }
 ]
+
 
