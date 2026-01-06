@@ -1,11 +1,11 @@
 (async function() {
-    // 1. Fontok
+    // 1. Fontok betöltése
     const fontLink = document.createElement('link');
     fontLink.href = 'https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Plus+Jakarta+Sans:wght@400;700;800&display=swap';
     fontLink.rel = 'stylesheet';
     document.head.appendChild(fontLink);
 
-    // 2. Stílusok
+    // 2. Stílusok (Smart Edition - 540px magasság, szellős tördelés)
     const styleSheet = document.createElement("style");
     styleSheet.textContent = `
         @keyframes pulse-invitation {
@@ -29,8 +29,8 @@
         .section-title { font-family: 'Plus Jakarta Sans', sans-serif !important; font-weight: 800 !important; font-size: 14px !important; text-transform: uppercase; letter-spacing: 1.2px; margin: 12px 0 8px 0; padding-bottom: 4px; border-bottom: 1px solid rgba(0,0,0,0.06); color: #64748b; }
         
         .carousel-wrapper { position: relative; height: 165px; margin-bottom: 5px; overflow: hidden; }
-        .carousel-item { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; visibility: hidden; transition: opacity 1.2s ease-in-out; }
-        .carousel-item.active { opacity: 1; visibility: visible; display: flex; flex-direction: column; justify-content: center; }
+        .carousel-item { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; visibility: hidden; transition: opacity 1.2s ease-in-out; display: flex; flex-direction: column; justify-content: center; }
+        .carousel-item.active { opacity: 1; visibility: visible; }
         
         .card-container { position: relative; padding-left: 14px; width: 100%; box-sizing: border-box; }
         .card-line { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
@@ -43,22 +43,15 @@
         .event-range { display: flex; align-items: center; font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 11px !important; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; color: #64748b; }
         
         .time-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px !important; font-weight: 800; margin-right: 5px; }
+        .time-urgent { background: #b91c1c; color: #fff; animation: pulse-invitation 2s infinite; }
+        .time-warning { background: #ea580c; color: #fff; }
+        .time-soon { background: #64748b; color: #fff; }
 
-        .event-msg { 
-            font-family: 'Plus Jakarta Sans', sans-serif !important; 
-            font-size: 14px !important; 
-            line-height: 1.45; 
-            color: #334155;
-            text-align: left;
-        }
-
+        .event-msg { font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 14px !important; line-height: 1.45; color: #334155; text-align: left; }
         .garden-footer { text-align: center; font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 10px !important; margin-top: auto; padding-top: 8px; line-height: 1.4; border-top: 1px solid rgba(0,0,0,0.05); opacity: 0.6; }
         
-        .loc-btn { 
-            width: 100%; cursor: pointer; padding: 10px; font-family: 'Plus Jakarta Sans', sans-serif !important; 
-            font-size: 10px; margin-bottom: 5px; text-transform: uppercase; font-weight: 800; border: none; 
-            background: #475569; color: white; animation: pulse-invitation 3s infinite ease-in-out;
-        }
+        .loc-btn { width: 100%; cursor: pointer; padding: 10px; font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 10px; margin-bottom: 5px; text-transform: uppercase; font-weight: 800; border: none; background: #475569; color: white; transition: background 0.3s; animation: pulse-invitation 3s infinite ease-in-out; }
+        .loc-btn:hover { background: #1e293b; animation-play-state: paused; }
     `;
     document.head.appendChild(styleSheet);
 
@@ -90,6 +83,7 @@
             else if (key === 'temp_above') { val = weather.daily.temperature_2m_max[idx]; return val >= condValue; }
             else if (key.startsWith('rain_min')) { val = weather.daily.precipitation_sum[idx]; return val >= condValue; }
             else if (key.startsWith('rain_max')) { val = weather.daily.precipitation_sum[idx]; return val <= condValue; }
+            else if (key.startsWith('snow_min')) { val = weather.daily.snowfall_sum[idx]; return val >= condValue; }
             else if (key.startsWith('wind_min')) { val = weather.daily[ruleType === 'alert' ? 'wind_gusts_10m_max' : 'wind_speed_10m_max'][idx]; return val >= condValue; }
             else if (key.startsWith('wind_max')) { val = weather.daily[ruleType === 'alert' ? 'wind_gusts_10m_max' : 'wind_speed_10m_max'][idx]; return val <= condValue; }
             return true;
@@ -113,9 +107,8 @@
             const sLat = localStorage.getItem('garden-lat'), sLon = localStorage.getItem('garden-lon');
             if (sLat && sLon) { lat = Number(sLat); lon = Number(sLon); isPers = true; }
 
-            const cached = localStorage.getItem('garden-weather-cache');
             let weather, lastUpdate;
-
+            const cached = localStorage.getItem('garden-weather-cache');
             if (cached) {
                 const p = JSON.parse(cached);
                 if (Date.now() - p.ts < 1800000 && Math.abs(p.lat - lat) < 0.01) {
@@ -127,7 +120,7 @@
             const rules = await rRes.json();
 
             if (!weather) {
-                const wRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,wind_speed_10m_max,wind_gusts_10m_max,precipitation_sum&past_days=7&timezone=auto`);
+                const wRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,wind_speed_10m_max,wind_gusts_10m_max,precipitation_sum,snowfall_sum&past_days=7&timezone=auto`);
                 weather = await wRes.json();
                 lastUpdate = new Date();
                 localStorage.setItem('garden-weather-cache', JSON.stringify({ ts: lastUpdate.getTime(), data: weather, lat, lon }));
@@ -177,25 +170,23 @@
                 const display = items.length ? items : (fallback ? [fallback] : []);
                 if (!display.length) return '';
                 return `<div id="${id}-carousel" class="carousel-wrapper">${display.map((item, idx) => {
-                    
+                    // Kötőszó-ragasztó (\u00A0 = non-breaking space)
                     let stickyMsg = item.msg.replace(/ (a|az|is|s|e|de|ha|ne) /gi, ' $1\u00A0');
-                    
-                    const sentenceParts = stickyMsg.split(/([.!?])\s+/);
-                    let formattedHtml = "";
-                    for (let i = 0; i < sentenceParts.length; i += 2) {
-                        if (sentenceParts[i]) {
-                            const punc = sentenceParts[i+1] || "";
-                            formattedHtml += `<span style="display:block; margin-bottom:5px;">${sentenceParts[i]}${punc}</span>`;
+                    // Mondat-blokkosítás
+                    const sentences = stickyMsg.split(/([.!?])\s+/);
+                    let msgHtml = "";
+                    for (let i = 0; i < sentences.length; i += 2) {
+                        if (sentences[i]) {
+                            msgHtml += `<span style="display:block; margin-bottom:5px;">${sentences[i]}${sentences[i+1] || ""}</span>`;
                         }
                     }
-
                     return `
                     <div class="carousel-item ${idx === 0 ? 'active' : ''}">
                         <div class="card-container">
                             <div class="card-line card-type-${item.type}"></div>
                             <div class="event-name">${item.title}</div>
                             <div class="event-range">${item.range}</div>
-                            <div class="event-msg">${formattedHtml}</div>
+                            <div class="event-msg">${msgHtml}</div>
                         </div>
                     </div>`;
                 }).join('')}</div>`;
@@ -211,7 +202,7 @@
                     ${renderZone(results.filter(r => r.type === 'window'), null, 'window')}
                     <div class="section-title">Teendők</div>
                     ${renderZone(results.filter(r => r.type !== 'alert' && r.type !== 'window'), getSeasonalFallback('info'), 'info')}
-                    <div class="garden-footer">Last updated: ${lastUpdate.toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})}<br>v3.6.8 - Smart Edition</div>
+                    <div class="garden-footer">Last updated: ${lastUpdate.toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})}<br>v3.7.0 - Snow Ready</div>
                 </div>`;
 
             document.getElementById('locBtn').onclick = () => {
@@ -245,4 +236,3 @@
     }
     init();
 })();
-
