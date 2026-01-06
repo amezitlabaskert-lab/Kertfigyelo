@@ -45,7 +45,7 @@
     "category": "weather",
     "conditions": {
       "temp_max_below": -1,
-      "snow_max_any": 2,
+      "snow_max": 0,
       "wind_gusts_min_any": 30,
       "days_min": 3
     },
@@ -232,5 +232,6 @@
     "message": "Lassulj le az őszi fényekkel. Gyűjtsd az őszi színeket!"
   }
 ]
+
 
 
