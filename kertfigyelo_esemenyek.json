@@ -49,7 +49,7 @@
       "wind_gusts_min_any": 30,
       "days_min": 3
     },
-    "message": "Téli aszály: nincs hó, tartós a fagy és szeles az idő. Az örökzöldek szövetei száradnak! Az első fagymentes napon alaposan öntözd meg őket!"
+    "message": "Téli aszály: nincs hó, tartós a fagy és szeles az idő. Fagymentes időben öntözd meg az örökzöldeket!"
   },
   {
     "_comment": "6.",
@@ -104,7 +104,7 @@
     "type": "alert",
     "category": "weather",
     "conditions": { "snow_min_any": 1 },
-    "message": "Hótakaró fedi a tájat, a madarak nem találnak táplálót. Tegyél ki eleséget!"
+    "message": "Hótakaró fedi a tájat, a madarak nem találnak táplálékot. Tegyél ki eleséget!"
   },
   {
     "_comment": "12.",
@@ -232,3 +232,4 @@
     "message": "Lassulj le az őszi fényekkel. Gyűjtsd az őszi színeket!"
   }
 ]
+
