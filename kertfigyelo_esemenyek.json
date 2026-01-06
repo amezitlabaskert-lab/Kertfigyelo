@@ -84,7 +84,7 @@
     "type": "alert",
     "category": "weather",
     "conditions": { "snow_min_any": 5 },
-    "message": "Jelentős friss hó esett! Rázd le a havat az örökzöldekről, mielőtt letörnek az ágak!"
+    "message": "Jelentős friss hó esett ({snow} cm)! Rázd le a havat az örökzöldekről, mielőtt letörnek az ágak!"
   },
   {
     "_comment": "9.",
@@ -118,7 +118,7 @@
     "priority": 20,
     "category": "seasonal",
     "seasons": [ { "start": "03-20", "end": "04-15" } ],
-    "message": "Itt a költési szezon! Ne etess tovább magvakkal, hagyd a szülőket rovarozni!"
+    "message": "Itt a költési szezon! Ne etess tovább magvakkal, mert veszélyes a fiókákra! Hagyd a szülőket rovarozni!"
   },
   {
     "_comment": "12.",
@@ -353,3 +353,4 @@
     "message": "Tökéletes, szélcsendes este a kerti kikapcsolódáshoz. Élvezd a kerted gyümölcsét!"
   }
 ]
+
