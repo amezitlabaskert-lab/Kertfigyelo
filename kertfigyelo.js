@@ -52,20 +52,17 @@
         /* ... a többi kód változatlan ... */
 
 .event-msg { 
-    font-family: 'Plus Jakarta Sans', sans-serif !important; 
-    font-size: 14px !important; 
-    line-height: 1.45; 
-    color: #334155; 
-    
-    /* OKOS SZÖVEGKEZELÉS: */
-    text-align: justify;          /* Sorkizárás az egyenletes szélért */
-    text-justify: inter-word;     /* Szavak közötti térközökkel igazít */
-    hyphens: auto;                /* Automatikus elválasztás (magyar nyelven is) */
-    word-break: break-word;       /* Hosszú szavak ne lógjanak ki */
-    overflow-wrap: break-word;    
-}
+            font-family: 'Plus Jakarta Sans', sans-serif !important; 
+            font-size: 14px !important; 
+            line-height: 1.5; 
+            color: #334155;
+            text-align: left;           
+            hyphens: auto;              
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            padding-right: 5px;         
+        }
 
-/* Megakadályozza, hogy az utolsó sor is szét legyen húzva sorkizárásnál */
 .event-msg::after {
     content: "";
     display: inline-block;
@@ -261,6 +258,7 @@
     }
     init();
 })();
+
 
 
 
