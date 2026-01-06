@@ -18,30 +18,36 @@
     "message": "Intenzív esőzés (15mm+) várható rövid idő alatt. Ellenőrizd a vízelvezetőket!"
   },
   {
-    "_comment": "3.",
+    "_comment": "3. - Prioritást kapott a fagycsaládban",
     "id": "mersekelt-fagy",
     "name": "❄️ Mérsékelt fagy",
     "type": "alert",
+    "group": "fagy",
+    "priority": 5,
     "category": "weather",
     "seasons": [ { "start": "10-15", "end": "04-15" } ],
     "conditions": { "temp_min_below": -5 },
     "message": "Beköszöntött a csípős idő! Éjszaka -5°C köré hűl a levegő."
   },
   {
-    "_comment": "4.",
+    "_comment": "4. - Ez üti a mérsékelt fagyot",
     "id": "eros-fagy-riado",
     "name": "❄️ Erős fagy",
     "type": "alert",
+    "group": "fagy",
+    "priority": 10,
     "category": "weather",
     "seasons": [ { "start": "11-01", "end": "03-15" } ],
     "conditions": { "temp_min_below": -10 },
     "message": "Erős fagyok várhatók (-10°C)! Ellenőrizd az érzékenyebb növények takarását!"
   },
   {
-    "_comment": "5.",
+    "_comment": "5. - Aszály csoport",
     "id": "teli-aszaly-veszely",
     "name": "⚠️ Téli aszály riadó",
     "type": "alert",
+    "group": "aszaly",
+    "priority": 10,
     "category": "weather",
     "conditions": {
       "temp_max_below": -1,
@@ -88,39 +94,47 @@
     "message": "Erős széllökések voltak az elmúlt napokban. Nézz rá a támrendszerekre!"
   },
   {
-    "_comment": "10.",
+    "_comment": "10. - Alap fauna prioritás",
     "id": "madaretetes-szezon",
     "name": "🐦 Madáretetés",
     "type": "info",
+    "group": "fauna",
+    "priority": 1,
     "category": "seasonal",
     "seasons": [ { "start": "11-15", "end": "03-15" } ],
     "conditions": { "temp_below": 2 },
     "message": "Beköszöntött a hideg. Töltsd fel a madáretetőket és gyönyörködj a sok kis vendégedben!"
   },
   {
-    "_comment": "11.",
+    "_comment": "11. - Ez üti a sima etetést",
     "id": "madaretetes-ho",
     "name": "❄️ Kritikus etetés",
     "type": "alert",
+    "group": "fauna",
+    "priority": 10,
     "category": "seasonal",
     "conditions": { "snow_min_any": 1 },
     "message": "Hótakaró fedi a tájat, a madarak nem találnak táplálékot. Tegyél ki eleséget!"
   },
   {
-    "_comment": "12.",
+    "_comment": "12. - Közepes fauna prioritás",
     "id": "madaritatas-tel",
     "name": "💧 Téli itatás",
     "type": "alert",
+    "group": "fauna",
+    "priority": 5,
     "category": "seasonal",
     "seasons": [ { "start": "11-01", "end": "03-15" } ],
     "conditions": { "temp_min_below": 0 },
     "message": "Fagyos idő van! A természetes vizek befagytak. Figyelj az itatókra!"
   },
   {
-    "_comment": "13.",
+    "_comment": "13. - Tavasszal ez a legerősebb",
     "id": "madaretetes-stop",
     "name": "🚫 Etetés leállítása",
     "type": "alert",
+    "group": "fauna",
+    "priority": 20,
     "category": "seasonal",
     "seasons": [ { "start": "03-20", "end": "04-15" } ],
     "message": "Itt a költési szezon! Ne etess tovább magvakkal, mert a fiókák belepusztulhatnak. Hagyd a szülőket rovarozni!"
@@ -130,6 +144,8 @@
     "id": "madaritatas-nyar",
     "name": "💧 Nyári itatás",
     "type": "info",
+    "group": "fauna",
+    "priority": 1,
     "category": "seasonal",
     "seasons": [ { "start": "06-01", "end": "08-31" } ],
     "conditions": { "temp_above": 30 },
@@ -146,20 +162,24 @@
     "message": "Ideális idő a lemosó permetezéshez: szélcsend, fagymentesség és száraz növényzet."
   },
   {
-    "_comment": "16.",
+    "_comment": "16. - Fauna csoport",
     "id": "leveltetu-megfigyeles",
     "name": "🪲 Levéltetű figyelő",
     "type": "info",
+    "group": "fauna",
+    "priority": 1,
     "category": "seasonal",
     "seasons": [ { "start": "04-01", "end": "05-20" } ],
     "conditions": { "temp_above": 12 },
     "message": "A levéltetvek ébredeznek, de a katicáknak még hideg van! Figyeld a friss hajtásokat!"
   },
   {
-    "_comment": "17.",
+    "_comment": "17. - Katicák fontosabbak a faunában",
     "id": "katica-aktivalodas",
     "name": "🐞 Katicák ébredése",
     "type": "info",
+    "group": "fauna",
+    "priority": 5,
     "category": "seasonal",
     "seasons": [ { "start": "04-01", "end": "06-30" } ],
     "conditions": { "temp_above": 15 },
@@ -186,10 +206,12 @@
     "message": "35°C feletti hőség! Perzselő nap, védekezz mélyöntözéssel!"
   },
   {
-    "_comment": "20.",
+    "_comment": "20. - Nyári aszály csoport",
     "id": "nyari-aszaly-pro",
     "name": "🔥 Aszályriadó",
     "type": "alert",
+    "group": "aszaly",
+    "priority": 10,
     "category": "weather",
     "seasons": [ { "start": "06-01", "end": "08-31" } ],
     "conditions": { "temp_above": 28, "rain_max": 3, "days_min": 5 },
@@ -232,6 +254,3 @@
     "message": "Lassulj le az őszi fényekkel. Gyűjtsd az őszi színeket!"
   }
 ]
-
-
-
