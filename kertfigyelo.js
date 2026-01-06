@@ -1,6 +1,6 @@
 (async function() {
     // --- KONFIGURÁCIÓ ---
-    const CACHE_VERSION = 'v3.9.8'; // Ha módosítod a szabályokat, ezt írd át v3.9.9-re stb.
+    const CACHE_VERSION = 'v3.9.9'; // A frissítés kényszerítéséhez emeltük a verziót
     // ---------------------
 
     const fontLink = document.createElement('link');
@@ -45,6 +45,7 @@
     document.head.appendChild(styleSheet);
 
     function checkSustained(weather, dayIdx, cond, ruleType) {
+        if (!weather || !weather.daily) return false;
         const days = cond.days_min || 1;
         if (dayIdx < days - 1) return false;
         const checkCondition = (key, idx) => {
@@ -106,19 +107,24 @@
 
             let weather, lastUpdate;
             const cached = localStorage.getItem('garden-weather-cache');
+            
             if (cached) {
-                const p = JSON.parse(cached);
-                // --- CLAUDE-FÉLE VERZIÓ ELLENŐRZÉS ---
-                if (p.version === CACHE_VERSION && Date.now() - p.ts < 1800000 && Math.abs(p.lat - lat) < 0.01) {
-                    weather = p.data; lastUpdate = new Date(p.ts);
-                }
+                try {
+                    const p = JSON.parse(cached);
+                    // BIZTONSÁGI ELLENŐRZÉS: Csak akkor használjuk, ha megvannak a napi adatok
+                    if (p.version === CACHE_VERSION && 
+                        p.data && p.data.daily && p.data.daily.time &&
+                        Date.now() - p.ts < 1800000 && Math.abs(p.lat - lat) < 0.01) {
+                        weather = p.data; lastUpdate = new Date(p.ts);
+                    }
+                } catch(e) { console.warn("Cache hiba, frissítés..."); }
             }
 
-            if (!weather) {
+            if (!weather || !weather.daily) {
                 const wRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,wind_speed_10m_max,wind_gusts_10m_max,precipitation_sum,snowfall_sum,snow_depth&past_days=7&timezone=auto`);
                 weather = await wRes.json();
+                if (!weather || !weather.daily) throw new Error("API hiba");
                 lastUpdate = new Date();
-                // --- VERZIÓ MENTÉSE A CACHE-BE ---
                 localStorage.setItem('garden-weather-cache', JSON.stringify({ 
                     version: CACHE_VERSION,
                     ts: lastUpdate.getTime(), 
@@ -137,6 +143,7 @@
 
             rules.forEach(rule => {
                 let range = null;
+                // Itt dőlt el korábban a kód, ha a weather.daily nem létezett
                 for (let i = 0; i < weather.daily.time.length; i++) {
                     const d = new Date(weather.daily.time[i]);
                     let inSeason = rule.seasons ? rule.seasons.some(s => {
@@ -195,13 +202,18 @@
             const setupCarousel = (id, count) => {
                 if (count <= 1) return;
                 const items = document.querySelectorAll(`#${id}-carousel .carousel-item`);
-                let idx = 0; setInterval(() => {
+                let idx = 0; 
+                const intervalId = setInterval(() => {
+                    if (!document.contains(items[0])) { clearInterval(intervalId); return; }
                     items[idx].classList.remove('active'); idx = (idx + 1) % items.length; items[idx].classList.add('active');
                 }, 6000);
             };
             setupCarousel('alert', alerts.length);
             setupCarousel('tasks', otherTasks.length);
-        } catch(e) { console.error(e); }
+        } catch(e) { 
+            console.error("Widget hiba:", e); 
+            widgetDiv.innerHTML = '<div style="font-size:10px; color:gray; text-align:center; padding:20px;">Időjárási adatok betöltése... (Próbálj frissíteni)</div>';
+        }
     }
     init();
 })();
