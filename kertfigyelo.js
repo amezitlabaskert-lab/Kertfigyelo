@@ -30,11 +30,11 @@
         .card-type-none { background: #94a3b8 !important; }
         .event-name { font-family: 'Plus Jakarta Sans', sans-serif !important; font-weight: 800 !important; font-size: 16px !important; margin-bottom: 2px; color: #1e293b; line-height: 1.2; }
         .event-range { font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 11px !important; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; color: #64748b; }
+        .event-msg { font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 14px !important; line-height: 1.45; color: #334155; }
         .time-badge { display: inline-block; padding: 2px 6px; font-size: 10px !important; font-weight: 800; margin-right: 5px; }
         .time-urgent { background: #b91c1c; color: #fff; animation: pulse-invitation 2s infinite; }
         .time-warning { background: #ea580c; color: #fff; }
         .time-soon { background: #64748b; color: #fff; }
-        .event-msg { font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 14px !important; line-height: 1.45; color: #334155; }
         .garden-footer { text-align: center; font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 10px !important; margin-top: auto; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.05); opacity: 0.6; }
         .loc-btn { width: 100%; cursor: pointer; padding: 10px; font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 10px; margin-bottom: 5px; text-transform: uppercase; font-weight: 800; border: none; background: #475569; color: white; animation: pulse-invitation 3s infinite ease-in-out; }
     `;
@@ -51,6 +51,7 @@
             if (key.startsWith('rain_min')) return weather.daily.precipitation_sum[idx] >= condValue;
             if (key.startsWith('rain_max')) return weather.daily.precipitation_sum[idx] <= condValue;
             if (key.startsWith('snow_min')) return weather.daily.snowfall_sum[idx] >= condValue;
+            if (key.startsWith('snow_depth')) return weather.daily.snow_depth[idx] >= condValue;
             if (key.startsWith('wind_min')) {
                 val = weather.daily[ruleType === 'alert' ? 'wind_gusts_10m_max' : 'wind_speed_10m_max'][idx];
                 return val >= condValue;
@@ -109,7 +110,7 @@
             }
 
             if (!weather) {
-                const wRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,wind_speed_10m_max,wind_gusts_10m_max,precipitation_sum,snowfall_sum&past_days=7&timezone=auto`);
+                const wRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,wind_speed_10m_max,wind_gusts_10m_max,precipitation_sum,snowfall_sum,snow_depth&past_days=7&timezone=auto`);
                 weather = await wRes.json();
                 lastUpdate = new Date();
                 localStorage.setItem('garden-weather-cache', JSON.stringify({ ts: lastUpdate.getTime(), data: weather, lat, lon }));
@@ -140,7 +141,7 @@
                     const fmt = (date, isStart) => {
                         const diff = Math.round((noon(date) - noon(todayStr)) / 86400000);
                         if (isStart) {
-                            let label = diff === 0 ? "MA ESTE" : (diff === 1 ? "HOLNAP" : (diff <= 3 ? diff + " NAP MÚLVA" : date.toLocaleDateString('hu-HU', {month:'short', day:'numeric'}).toUpperCase()));
+                            let label = diff === 0 ? "MA" : (diff === 1 ? "HOLNAP" : (diff <= 3 ? diff + " NAP MÚLVA" : date.toLocaleDateString('hu-HU', {month:'short', day:'numeric'}).toUpperCase()));
                             let cls = diff === 0 ? "time-urgent" : (diff === 1 ? "time-warning" : "time-soon");
                             return `<span class="time-badge ${cls}">${label}</span>`;
                         }
@@ -161,7 +162,7 @@
                     ${renderZone(alerts, 'alert')}
                     <div class="section-title">Teendők</div>
                     ${renderZone(otherTasks, 'tasks')}
-                    <div class="garden-footer">Last updated: ${lastUpdate.toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})}<br>v3.9.0 - Clean Edition</div>
+                    <div class="garden-footer">Last updated: ${lastUpdate.toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})}<br>v3.9.7 - Final Edition</div>
                 </div>`;
 
             document.getElementById('locBtn').onclick = () => {
@@ -171,11 +172,12 @@
                 } else {
                     navigator.geolocation.getCurrentPosition(p => {
                         const {latitude: la, longitude: lo} = p.coords;
+                        // MAGYARORSZÁG VALIDÁCIÓ VISSZATÉVE ✅
                         if (la > 45.7 && la < 48.6 && lo > 16.1 && lo < 22.9) {
                             localStorage.setItem('garden-lat', la); localStorage.setItem('garden-lon', lo);
                             localStorage.removeItem('garden-weather-cache'); location.reload();
                         } else alert("Ez a widget csak Magyarországon működik.");
-                    }, () => alert("A helymeghatározás nem sikerült."));
+                    }, () => alert("Helymeghatározási hiba."));
                 }
             };
 
@@ -188,7 +190,7 @@
             };
             setupCarousel('alert', alerts.length);
             setupCarousel('tasks', otherTasks.length);
-        } catch(e) { console.error("Kertfigyelo Error:", e); }
+        } catch(e) { console.error(e); }
     }
     init();
 })();
