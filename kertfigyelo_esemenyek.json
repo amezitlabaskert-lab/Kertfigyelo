@@ -142,15 +142,17 @@
     "message": "Kánikula van. Frissítsd a vizet a madáritatóban!"
   },
   {
+    {
     "_comment": "14.",
-    "id": "sun-teli-alom",
-    "name": "🦔 Süni téli álom",
+    "id": "sun-szallas-kereses",
+    "name": "🦔 Süni fészekrakás",
     "type": "info",
     "group": "sun-szerviz",
-    "priority": 1,
+    "priority": 5,
     "category": "seasonal",
-    "seasons": [ { "start": "11-01", "end": "03-15" } ],
-    "message": "A sünik téli álmot alszanak. Ne bolygasd a kert eldugott sarkait!"
+    "seasons": [ { "start": "10-15", "end": "11-20" } ],
+    "conditions": { "temp_min_below": 5 },
+    "message": "A sünik téli szállást keresnek! Hagyj egy kis gally- vagy lombkupacot a kert sarkában menedéknek."
   },
   {
     "_comment": "15.",
@@ -160,9 +162,9 @@
     "group": "sun-szerviz",
     "priority": 10,
     "category": "seasonal",
-    "seasons": [ { "start": "03-16", "end": "04-30" } ],
+    "seasons": [ { "start": "03-15", "end": "04-20" } ],
     "conditions": { "temp_above": 10 },
-    "message": "A sünik ébrednek! Nagyon szomjasak és éhesek. Tegyél ki nekik lapos tálba vizet!"
+    "message": "A sünik ébrednek! Nagyon szomjasak és éhesek. Tegyél ki nekik lapos tálba friss vizet!"
   },
   {
     "_comment": "16.",
@@ -349,5 +351,6 @@
     "message": "Tökéletes, szélcsendes este a kerti kikapcsolódáshoz. Élvezd a kerted gyümölcsét!"
   }
 ]
+
 
 
