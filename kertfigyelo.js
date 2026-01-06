@@ -1,4 +1,8 @@
 (async function() {
+    // --- KONFIGURÁCIÓ ---
+    const CACHE_VERSION = 'v3.9.8'; // Ha módosítod a szabályokat, ezt írd át v3.9.9-re stb.
+    // ---------------------
+
     const fontLink = document.createElement('link');
     fontLink.href = 'https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Plus+Jakarta+Sans:wght@400;700;800&display=swap';
     fontLink.rel = 'stylesheet';
@@ -15,6 +19,7 @@
         .garden-main-card { 
             background: #ffffff !important; padding: 18px; display: flex; 
             flex-direction: column; box-sizing: border-box; height: 540px; 
+            border: 1px solid #000;
         }
         .garden-title { font-family: 'Dancing Script', cursive !important; font-size: 3.2em !important; font-weight: 700 !important; text-align: center !important; margin: 5px 0 12px 0 !important; line-height: 1.1; color: #1a1a1a; }
         .section-title { font-family: 'Plus Jakarta Sans', sans-serif !important; font-weight: 800 !important; font-size: 14px !important; text-transform: uppercase; letter-spacing: 1.2px; margin: 12px 0 8px 0; padding-bottom: 4px; border-bottom: 1px solid rgba(0,0,0,0.06); color: #64748b; }
@@ -70,7 +75,7 @@
         return true;
     }
 
-const renderZone = (items, id) => {
+    const renderZone = (items, id) => {
         if (!items.length) return `<div class="carousel-wrapper" style="display:flex; align-items:center; justify-content:center; opacity:0.3; font-size:12px;">Nincs aktuális esemény</div>`;
         return `<div id="${id}-carousel" class="carousel-wrapper">${items.map((item, idx) => {
             let stickyMsg = item.msg.replace(/ (a|az|is|s|e|de|ha|ne) /gi, ' $1\u00A0');
@@ -103,7 +108,8 @@ const renderZone = (items, id) => {
             const cached = localStorage.getItem('garden-weather-cache');
             if (cached) {
                 const p = JSON.parse(cached);
-                if (Date.now() - p.ts < 1800000 && Math.abs(p.lat - lat) < 0.01) {
+                // --- CLAUDE-FÉLE VERZIÓ ELLENŐRZÉS ---
+                if (p.version === CACHE_VERSION && Date.now() - p.ts < 1800000 && Math.abs(p.lat - lat) < 0.01) {
                     weather = p.data; lastUpdate = new Date(p.ts);
                 }
             }
@@ -112,7 +118,14 @@ const renderZone = (items, id) => {
                 const wRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,wind_speed_10m_max,wind_gusts_10m_max,precipitation_sum,snowfall_sum,snow_depth&past_days=7&timezone=auto`);
                 weather = await wRes.json();
                 lastUpdate = new Date();
-                localStorage.setItem('garden-weather-cache', JSON.stringify({ ts: lastUpdate.getTime(), data: weather, lat, lon }));
+                // --- VERZIÓ MENTÉSE A CACHE-BE ---
+                localStorage.setItem('garden-weather-cache', JSON.stringify({ 
+                    version: CACHE_VERSION,
+                    ts: lastUpdate.getTime(), 
+                    data: weather, 
+                    lat, 
+                    lon 
+                }));
             }
 
             const rRes = await fetch('https://raw.githack.com/amezitlabaskert-lab/kertfigyelo/main/kertfigyelo_esemenyek.json?v=' + Date.now());
@@ -161,7 +174,7 @@ const renderZone = (items, id) => {
                     ${renderZone(alerts, 'alert')}
                     <div class="section-title">Teendők</div>
                     ${renderZone(otherTasks, 'tasks')}
-                    <div class="garden-footer">Last updated: ${lastUpdate.toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})}<br>v3.9.7 - Final Edition</div>
+                    <div class="garden-footer">Last updated: ${lastUpdate.toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})}<br>${CACHE_VERSION} Edition</div>
                 </div>`;
 
             document.getElementById('locBtn').onclick = () => {
@@ -171,7 +184,6 @@ const renderZone = (items, id) => {
                 } else {
                     navigator.geolocation.getCurrentPosition(p => {
                         const {latitude: la, longitude: lo} = p.coords;
-                        // MAGYARORSZÁG VALIDÁCIÓ VISSZATÉVE ✅
                         if (la > 45.7 && la < 48.6 && lo > 16.1 && lo < 22.9) {
                             localStorage.setItem('garden-lat', la); localStorage.setItem('garden-lon', lo);
                             localStorage.removeItem('garden-weather-cache'); location.reload();
@@ -193,6 +205,3 @@ const renderZone = (items, id) => {
     }
     init();
 })();
-
-
-
