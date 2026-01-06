@@ -1,7 +1,7 @@
 (async function() {
-    const CACHE_VERSION = 'v4.3.6'; 
+    const CACHE_VERSION = 'v4.5.4'; 
+    const RAIN_THRESHOLD = 8; // mm
 
-    // --- STÍLUSOK ÉS BETŰKÉSZLETEK ---
     const fontLink = document.createElement('link');
     fontLink.href = 'https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Plus+Jakarta+Sans:wght@400;700;800&display=swap';
     fontLink.rel = 'stylesheet';
@@ -36,60 +36,68 @@
         .time-urgent { background: #b91c1c; color: #fff; }
         .time-warning { background: #ea580c; color: #fff; }
         .time-soon { background: #64748b; color: #fff; }
-        .garden-footer { text-align: center; font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 10px !important; margin-top: auto; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.05); opacity: 0.6; }
+        .garden-footer { text-align: center; font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 10px !important; margin-top: auto; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.05); opacity: 0.6; line-height: 1.4; }
         .loc-btn { width: 100%; cursor: pointer; padding: 10px; font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 10px; margin-bottom: 5px; text-transform: uppercase; font-weight: 800; border: none; border-radius: 0; background: #475569; color: white; animation: pulse-invitation 3s infinite ease-in-out; }
     `;
     document.head.appendChild(styleSheet);
 
     const noon = d => new Date(d).setHours(12,0,0,0);
 
-    function checkCondition(weather, idx, key, val) {
+    function processMessage(msg, weather, dryDays) {
+        if (!msg) return "";
+        try {
+            if (msg.includes("{temp}")) {
+                const val = Math.min(...weather.daily.temperature_2m_min.slice(7));
+                msg = msg.replace("{temp}", Math.round(val));
+            }
+            if (msg.includes("{wind}")) {
+                const val = Math.max(...weather.daily.wind_gusts_10m_max.slice(7));
+                msg = msg.replace("{wind}", Math.round(val));
+            }
+            if (msg.includes("{days}")) msg = msg.replace("{days}", dryDays);
+            
+            if (msg.includes("{next_rain}")) {
+                const idx = weather.daily.precipitation_sum.slice(7).findIndex(r => r >= 1);
+                if (idx !== -1) {
+                    const d = new Date(weather.daily.time[idx + 7]);
+                    const rainVal = Math.round(weather.daily.precipitation_sum[idx + 7]);
+                    const rainText = idx === 0 ? "Ma esik!" : `Eső: ${d.toLocaleDateString('hu-HU',{weekday:'long'})} (${rainVal}mm).`;
+                    msg = msg.replace("{next_rain}", rainText);
+                } else msg = msg.replace("{next_rain}", "Nincs eső a láthatáron.");
+            }
+        } catch(e) { console.warn("Msg error", e); }
+        
+        return msg.split(/([.!?])\s+/).map((s, i, a) => 
+            (i % 2 === 0 && s) ? `<span style="display:block; margin-bottom:5px;">${s}${a[i+1] || ""}</span>` : ""
+        ).join('');
+    }
+
+    function checkCondition(weather, idx, key, val, dryDays) {
         const d = weather.daily;
         if (key === 'temp_max_below') return d.temperature_2m_max[idx] <= val;
         if (key === 'temp_min_below' || key === 'temp_below') return d.temperature_2m_min[idx] <= val;
         if (key === 'temp_above') return d.temperature_2m_max[idx] >= val;
         if (key.startsWith('rain_min')) return d.precipitation_sum[idx] >= val;
         if (key.startsWith('rain_max')) return d.precipitation_sum[idx] <= val;
-        if (key.startsWith('snow_min')) return d.snowfall_sum[idx] >= val;
-        if (key.startsWith('snow_max')) return d.snowfall_sum[idx] <= val;
-        if (key.includes('wind_gusts') || key.startsWith('wind_min')) return d.wind_gusts_10m_max[idx] >= val;
-        if (key.includes('wind_speed') || key.startsWith('wind_max')) return d.wind_speed_10m_max[idx] <= val;
+        if (key.includes('wind_gusts')) return d.wind_gusts_10m_max[idx] >= val;
+        if (key === 'days_min') return dryDays >= val;
         return true;
     }
 
-    function checkSustained(weather, dayIdx, cond) {
-        if (!weather?.daily?.time) return false;
-        const days = cond.days_min || 1;
+    function checkSustained(weather, dayIdx, cond, dryDays) {
+        if (cond.days_min !== undefined && dryDays < cond.days_min) return false;
+        const days = (cond.days_min && !cond.temp_above) ? 1 : (cond.days_min || 1);
         if (dayIdx < days - 1) return false;
         for (const key in cond) {
-            if (key === 'days_min') continue;
-            const isAny = key.endsWith('_any');
-            const res = [];
+            if (key === 'days_min') continue; 
+            const results = [];
             for (let j = 0; j < days; j++) {
-                res.push(checkCondition(weather, dayIdx - j, key, cond[key]));
+                results.push(checkCondition(weather, dayIdx - j, key, cond[key], dryDays));
             }
-            if (!(isAny ? res.some(r => r) : res.every(r => r))) return false;
+            if (!results.every(r => r)) return false;
         }
         return true;
     }
-
-    const renderZone = (items, id) => {
-        if (!items.length) return `<div class="carousel-wrapper" style="display:flex; align-items:center; justify-content:center; opacity:0.3; font-size:12px;">Nincs aktuális esemény</div>`;
-        return `<div id="${id}-carousel" class="carousel-wrapper">${items.map((item, idx) => {
-            let msgHtml = item.msg.split(/([.!?])\s+/).map((s, i, a) => 
-                (i % 2 === 0 && s) ? `<span style="display:block; margin-bottom:5px;">${s}${a[i+1] || ""}</span>` : ""
-            ).join('');
-            return `
-            <div class="carousel-item ${idx === 0 ? 'active' : ''}">
-                <div class="card-container">
-                    <div class="card-line card-type-${item.type}"></div>
-                    <div class="event-name">${item.title}</div>
-                    ${item.range ? `<div class="event-range">${item.range}</div>` : ''}
-                    <div class="event-msg">${msgHtml}</div>
-                </div>
-            </div>`;
-        }).join('')}</div>`;
-    };
 
     async function init() {
         const widgetDiv = document.getElementById('kertfigyelo');
@@ -103,125 +111,118 @@
             let weather, lastUpdate;
             const cached = localStorage.getItem('garden-weather-cache');
             if (cached) {
-                try {
-                    const p = JSON.parse(cached);
-                    if (p.version === CACHE_VERSION && p.data?.daily?.time && Date.now() - p.ts < 1800000) {
-                        weather = p.data; lastUpdate = new Date(p.ts);
-                    }
-                } catch(e) {}
+                const p = JSON.parse(cached);
+                if (p.version === CACHE_VERSION && Date.now() - p.ts < 1800000) {
+                    weather = p.data; lastUpdate = new Date(p.ts);
+                }
             }
 
             if (!weather) {
                 const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,wind_speed_10m_max,wind_gusts_10m_max,precipitation_sum,snowfall_sum,precipitation_probability_max&past_days=7&timezone=auto`;
-                const res = await fetch(url);
-                weather = await res.json();
+                weather = await (await fetch(url)).json();
                 lastUpdate = new Date();
-                try { localStorage.setItem('garden-weather-cache', JSON.stringify({ version: CACHE_VERSION, ts: lastUpdate.getTime(), data: weather, lat, lon })); } catch(e){}
+                localStorage.setItem('garden-weather-cache', JSON.stringify({ version: CACHE_VERSION, ts: lastUpdate.getTime(), data: weather }));
             }
+
+            const todayIdx = 7;
+            if (weather.daily.precipitation_sum[todayIdx] >= RAIN_THRESHOLD) {
+                localStorage.setItem('last_rain_date', weather.daily.time[todayIdx]);
+            }
+            const lastRain = localStorage.getItem('last_rain_date');
+            const dryDays = lastRain ? Math.floor(Math.abs(new Date() - new Date(lastRain)) / 86400000) : 0;
 
             const rules = await (await fetch('https://raw.githack.com/amezitlabaskert-lab/kertfigyelo/main/kertfigyelo_esemenyek.json?v=' + Date.now())).json();
             const rawResults = [];
-            const todayStr = new Date().toISOString().split('T')[0];
 
             rules.forEach(rule => {
+                if (!rule.id) return;
                 let range = null;
-                for (let i = 0; i < weather.daily.time.length; i++) {
+                for (let i = todayIdx; i < weather.daily.time.length; i++) {
                     const d = new Date(weather.daily.time[i]);
                     const inSeason = !rule.seasons || rule.seasons.some(s => {
                         const [sM, sD] = s.start.split('-').map(Number), [eM, eD] = s.end.split('-').map(Number);
                         const sDate = new Date(d.getFullYear(), sM-1, sD), eDate = new Date(d.getFullYear(), eM-1, eD);
                         return eDate < sDate ? (d >= sDate || d <= eDate) : (d >= sDate && d <= eDate);
                     });
-                    if (inSeason && checkSustained(weather, i, rule.conditions || {})) {
+                    if (inSeason && checkSustained(weather, i, rule.conditions || {}, dryDays)) {
                         if (!range) range = { start: d, end: d }; else range.end = d;
                     } else if (range) break;
                 }
-                if (range && noon(range.end) >= noon(todayStr)) {
-                    if (rule.category === "check" && noon(range.start) > noon(todayStr)) return;
-                    rawResults.push({ ...rule, start: range.start, end: range.end });
-                }
+                if (range) rawResults.push({ ...rule, start: range.start, end: range.end });
             });
 
-            // Aszály tracker
-            let tracker = JSON.parse(localStorage.getItem('garden-alert-tracker') || '{}');
-            const newTracker = {};
-            const nowTs = Date.now();
-            rawResults.forEach(res => {
-                if (res.id.includes('aszaly')) {
-                    newTracker[res.id] = tracker[res.id] || nowTs;
-                    const daysActive = Math.floor((nowTs - newTracker[res.id]) / 86400000);
-                    if (daysActive >= 7) res.customLabel = `${Math.floor(daysActive/7)} HETE TART`;
-                    else if (daysActive > 0) res.customLabel = `${daysActive} NAPJA TART`;
-                }
-            });
-            localStorage.setItem('garden-alert-tracker', JSON.stringify(newTracker));
-
-            // RENDSZERTANI SZŰRÉS
             const groupWinners = {};
             rawResults.forEach(r => {
-                if (r.group) {
-                    if (!groupWinners[r.group] || (r.priority || 0) > (groupWinners[r.group].priority || 0)) {
-                        groupWinners[r.group] = r;
-                    }
-                }
+                if (r.group && (!groupWinners[r.group] || (r.priority || 0) > (groupWinners[r.group].priority || 0))) groupWinners[r.group] = r;
             });
-
-            const taxonomyFiltered = rawResults.filter(r => !r.group || r.id === groupWinners[r.group].id);
-
-            // --- JAVÍTOTT ZÓNA SZÉTVÁLOGATÁS ---
-            const alertsZoneRaw = taxonomyFiltered.filter(r => r.type === 'alert');
-            
-            // OthersZone prioritás: 1. Windows, 2. Info/None
-            let othersZoneRaw = taxonomyFiltered.filter(r => r.type === 'window');
-            if (othersZoneRaw.length === 0) {
-                othersZoneRaw = taxonomyFiltered.filter(r => r.type === 'info' || r.type === 'none');
-            }
+            const filtered = rawResults.filter(r => !r.group || r.id === groupWinners[r.group].id);
 
             const mapToResult = (item) => {
-                const isSzezonalis = item.category === "seasonal", isSzemle = item.category === "check";
-                const fmt = (date, isStart) => {
-                    const diff = Math.round((noon(date) - noon(todayStr)) / 86400000);
-                    if (isStart) {
-                        if (isSzezonalis) return `<span class="time-badge type-szezon">SZEZONÁLIS</span>`;
-                        if (isSzemle) return `<span class="time-badge type-szemle">VISSZATEKINTŐ</span>`;
-                        if (item.customLabel) return `<span class="time-badge time-urgent">${item.customLabel}</span>`;
-                        const label = diff < 0 ? "FOLYAMATBAN" : (diff === 0 ? "MA" : (diff === 1 ? "HOLNAP" : diff + " NAP MÚLVA"));
-                        return `<span class="time-badge ${diff <= 0 ? 'time-urgent' : (diff === 1 ? 'time-warning' : 'time-soon')}">${label}</span>`;
-                    }
-                    return date.toLocaleDateString('hu-HU', {month:'short', day:'numeric'}).toUpperCase();
-                };
-
-                let rangeStr = "";
-                if (isSzezonalis || isSzemle) {
-                    rangeStr = fmt(item.start, true);
-                } else if (item.id.includes('aszaly')) {
-                    const lastDayProb = weather.daily.precipitation_probability_max[6];
-                    rangeStr = (lastDayProb < 30) ? fmt(item.start, true) : `${fmt(item.start, true)} — CSAPADÉK: ${fmt(item.end, false)}`;
-                } else {
-                    rangeStr = (noon(item.start) !== noon(item.end) ? fmt(item.start, true) + ' — ' + fmt(item.end, false) : fmt(item.start, true));
+                const diff = Math.round((noon(item.start) - noon(new Date())) / 86400000);
+                let label = diff < 0 ? "FOLYAMATBAN" : (diff === 0 ? "MA" : diff + " NAP MÚLVA");
+                if (item.category === "seasonal") label = "SZEZONÁLIS";
+                if (item.category === "check") label = "VISSZATEKINTŐ";
+                if (item.id.includes('aszaly') && dryDays >= 7) {
+                    label = dryDays >= 14 ? `${Math.floor(dryDays/7)} HETE TART` : `${dryDays} NAPJA TART`;
                 }
-                return { range: rangeStr, title: item.name, msg: item.message, type: item.type };
+                const badgeClass = item.category === "seasonal" ? 'type-szezon' : (item.category === "check" ? 'type-szemle' : (diff <= 0 ? 'time-urgent' : (diff === 1 ? 'time-warning' : 'time-soon')));
+                let rangeStr = `<span class="time-badge ${badgeClass}">${label}</span>`;
+                if (!["seasonal", "check"].includes(item.category) && noon(item.start) !== noon(item.end)) {
+                    rangeStr += ` — ${new Date(item.end).toLocaleDateString('hu-HU',{month:'short',day:'numeric'}).toUpperCase()}`;
+                }
+                return { title: item.name, range: rangeStr, msg: processMessage(item.message, weather, dryDays), type: item.type };
             };
 
-            const alertsZone = alertsZoneRaw.map(mapToResult);
-            const othersZone = othersZoneRaw.map(mapToResult);
+            const alerts = filtered.filter(r => r.type === 'alert').map(mapToResult);
+            let others = filtered.filter(r => r.type === 'window').map(mapToResult);
+            if (!others.length) others = filtered.filter(r => ['info', 'none'].includes(r.type)).map(mapToResult);
 
             widgetDiv.innerHTML = `<div class="garden-main-card">
                 <div class="garden-title">${isPers ? 'Kertfigyelőd' : 'Kertfigyelő'}</div>
-                <button id="locBtn" class="loc-btn">${isPers ? 'Vissza az alaphoz' : 'Saját kertfigyelőt!'}</button>
-                <div class="section-title">Riasztások</div>${renderZone(alertsZone, 'alert')}
-                <div class="section-title">Teendők & Info</div>${renderZone(othersZone, 'tasks')}
-                <div class="garden-footer">Frissítve: ${lastUpdate.toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})}<br>${CACHE_VERSION}</div>
+                <button id="locBtn" class="loc-btn">${isPers ? 'Vissza az alaphoz' : 'Saját kertfigyelőt kérek!'}</button>
+                <div class="section-title">Riasztások</div>${renderZone(alerts, 'alert')}
+                <div class="section-title">Teendők & Info</div>${renderZone(others, 'tasks')}
+                <div class="garden-footer">Helyszín: ${isPers ? 'Egyedi kert' : 'Mezítlábas Kert bázisa'}<br>Frissítve: ${lastUpdate.toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})}</div>
             </div>`;
 
             document.getElementById('locBtn').onclick = () => {
-                if (isPers) { localStorage.removeItem('garden-lat'); localStorage.removeItem('garden-lon'); localStorage.removeItem('garden-alert-tracker'); localStorage.removeItem('garden-weather-cache'); location.reload(); }
-                else { navigator.geolocation.getCurrentPosition(p => { const {latitude: la, longitude: lo} = p.coords; if (la > 45.7 && la < 48.6 && lo > 16.1 && lo < 22.9) { localStorage.setItem('garden-lat', la); localStorage.setItem('garden-lon', lo); location.reload(); } else { alert("Csak Magyarországon."); } }, () => alert("Hiba.")); }
+                if (isPers) { 
+                    ['garden-lat','garden-lon','garden-weather-cache','last_rain_date'].forEach(k => localStorage.removeItem(k)); 
+                    location.reload(); 
+                }
+                else { 
+                    navigator.geolocation.getCurrentPosition(p => {
+                        const {latitude: la, longitude: lo} = p.coords;
+                        if (la > 45.7 && la < 48.6 && lo > 16.1 && lo < 22.9) { 
+                            localStorage.setItem('garden-lat', la); localStorage.setItem('garden-lon', lo); location.reload(); 
+                        } else { 
+                            alert("A Kertfigyelő jelenleg csak Magyarország területén tud pontos tanácsokat adni. 🇭🇺"); 
+                        }
+                    }, (err) => {
+                        alert(err.code === 1 ? "A helymeghatározás le van tiltva a böngésződben." : "Sajnos nem sikerült meghatározni a helyzetedet.");
+                    }); 
+                }
             };
 
             const setup = (id, len) => { if (len <= 1) return; const items = document.querySelectorAll(`#${id}-carousel .carousel-item`); let i = 0; setInterval(() => { if(items[i]) items[i].classList.remove('active'); i = (i + 1) % len; if(items[i]) items[i].classList.add('active'); }, 8000); };
-            setup('alert', alertsZone.length); setup('tasks', othersZone.length);
-        } catch(e) { console.error(e); widgetDiv.innerHTML = `<div style="padding:20px; font-size:12px; color:gray; text-align:center;">Hiba az adatok betöltésekor.</div>`; }
+            setup('alert', alerts.length); setup('tasks', others.length);
+
+        } catch(e) { 
+            widgetDiv.innerHTML = `<div style="padding:40px 20px; text-align:center; background:white;"><p>Hiba történt az adatok betöltésekor.</p><button onclick="location.reload()">FRISSÍTÉS</button></div>`; 
+        }
+    }
+
+    function renderZone(items, id) {
+        if (!items.length) return `<div class="carousel-wrapper" style="display:flex;align-items:center;justify-content:center;opacity:0.3;font-size:12px;">Nincs aktuális esemény</div>`;
+        return `<div id="${id}-carousel" class="carousel-wrapper">${items.map((item, idx) => `
+            <div class="carousel-item ${idx === 0 ? 'active' : ''}">
+                <div class="card-container">
+                    <div class="card-line card-type-${item.type}"></div>
+                    <div class="event-name">${item.title}</div>
+                    <div class="event-range">${item.range}</div>
+                    <div class="event-msg">${item.msg}</div>
+                </div>
+            </div>`).join('')}</div>`;
     }
     init();
 })();
