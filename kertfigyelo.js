@@ -15,10 +15,10 @@
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(71, 85, 105, 0); }
         }
         #kertfigyelo { width: 300px; text-align: left; margin: 0; background: white; overflow: hidden; border-radius: 0; }
-        .garden-main-card { background: #ffffff !important; padding: 18px; display: flex; flex-direction: column; box-sizing: border-box; min-height: 540px; height: auto; border-radius: 0; pointer-events: none;user-select: none; }
+        .garden-main-card { background: #ffffff !important; padding: 18px; display: flex; flex-direction: column; box-sizing: border-box; min-height: 480px; height: auto; border-radius: 0; pointer-events: none;user-select: none; }
         .garden-title { font-family: 'Dancing Script', cursive !important; font-size: 3em !important; font-weight: 700 !important; text-align: center !important; margin: 5px 0 12px 0 !important; line-height: 1.1; color: #1a1a1a; }
         .section-title { font-family: 'Plus Jakarta Sans', sans-serif !important; font-weight: 800 !important; font-size: 14px !important; text-transform: uppercase; letter-spacing: 1.2px; margin: 12px 0 8px 0; padding-bottom: 4px; border-bottom: 1px solid rgba(0,0,0,0.06); color: #64748b; }
-        .carousel-wrapper { position: relative; height: 165px; margin-bottom: 5px; overflow: hidden; }
+        .carousel-wrapper { position: relative; height: 140px; margin-bottom: 5px; overflow: hidden; }
         .carousel-item { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; visibility: hidden; transition: opacity 1.2s ease-in-out; display: flex; flex-direction: column; justify-content: center; }
         .carousel-item.active { opacity: 1; visibility: visible; }
         .card-container { position: relative; padding-left: 14px; width: 100%; box-sizing: border-box; }
@@ -253,6 +253,7 @@
     }
     init();
 })();
+
 
 
 
