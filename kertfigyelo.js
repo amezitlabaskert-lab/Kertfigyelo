@@ -49,7 +49,28 @@
         .time-warning { background: #ea580c; color: #fff; }
         .time-soon { background: #64748b; color: #fff; }
 
-        .event-msg { font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 14px !important; line-height: 1.45; color: #334155; }
+        /* ... a többi kód változatlan ... */
+
+.event-msg { 
+    font-family: 'Plus Jakarta Sans', sans-serif !important; 
+    font-size: 14px !important; 
+    line-height: 1.45; 
+    color: #334155; 
+    
+    /* OKOS SZÖVEGKEZELÉS: */
+    text-align: justify;          /* Sorkizárás az egyenletes szélért */
+    text-justify: inter-word;     /* Szavak közötti térközökkel igazít */
+    hyphens: auto;                /* Automatikus elválasztás (magyar nyelven is) */
+    word-break: break-word;       /* Hosszú szavak ne lógjanak ki */
+    overflow-wrap: break-word;    
+}
+
+/* Megakadályozza, hogy az utolsó sor is szét legyen húzva sorkizárásnál */
+.event-msg::after {
+    content: "";
+    display: inline-block;
+    width: 100%;
+}
         .garden-footer { text-align: center; font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 10px !important; margin-top: auto; padding-top: 8px; line-height: 1.4; border-top: 1px solid rgba(0,0,0,0.05); opacity: 0.6; }
         
         .loc-btn { 
@@ -240,6 +261,7 @@
     }
     init();
 })();
+
 
 
 
