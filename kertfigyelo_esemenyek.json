@@ -178,7 +178,7 @@
     "category": "seasonal",
     "seasons": [ { "start": "04-01", "end": "05-20" } ],
     "conditions": { "temp_above": 12 },
-    "message": "A levéltetvek ébredeznek. Figyeld a friss hajtásokat!"
+    "message": "A levéltetvek ébredeznek, de a katicáknak még hideg lehet! Figyeld a friss hajtásokat!"
   },
   {
     "_comment": "17.",
@@ -353,6 +353,7 @@
     "message": "Tökéletes, szélcsendes este a kerti kikapcsolódáshoz. Élvezd a kerted gyümölcsét!"
   }
 ]
+
 
 
 
