@@ -1,5 +1,5 @@
 (async function() {
-    const CACHE_VERSION = 'v4.7.9'; 
+    const CACHE_VERSION = 'v5.0'; 
     const RAIN_THRESHOLD = 8;
 
     // 1. URL PARAMÉTEREK AZONNALI KEZELÉSE
@@ -211,4 +211,5 @@
     }
     init();
 })();
+
 
