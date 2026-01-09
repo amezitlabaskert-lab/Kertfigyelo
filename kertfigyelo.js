@@ -177,7 +177,7 @@
             if (!others.length) others = filtered.filter(r => ['info', 'none'].includes(r.type)).map(mapToResult);
 
             widgetDiv.innerHTML = `<div class="garden-main-card">
-                <div class="garden-title">${isPers ? 'Kertfigyelőd' : 'Kertfigyelő'}</div>
+                <div class="garden-title">${isPers ? 'Kertfigyelőm' : 'Kertfigyelő'}</div>
                 <button id="locBtn" class="loc-btn">${isPers ? 'Vissza az alaphoz' : 'Saját kertfigyelőt!'}</button>
                 <div class="section-title">Riasztások</div>${renderZone(alerts, 'alert')}
                 <div class="section-title">Teendők & Info</div>${renderZone(others, 'tasks')}
@@ -211,3 +211,4 @@
     }
     init();
 })();
+
