@@ -1,5 +1,5 @@
 (async function() {
-    const CACHE_VERSION = 'v6.3.7'; 
+    const CACHE_VERSION = 'v6.3.8'; 
     const RAIN_THRESHOLD = 8;
     const RAIN_NONE = 0.8; 
 
@@ -66,19 +66,19 @@
             if (msg.includes("{temp}")) msg = msg.replace("{temp}", Math.round(d.temperature_2m_min[idx]));
             if (msg.includes("{wind}")) msg = msg.replace("{wind}", Math.round(d.wind_gusts_10m_max[idx]));
             if (msg.includes("{rain}")) {
-                const rainVal = isCheckCategory ? Math.max(...d.precipitation_sum.slice(0, 8)) : d.precipitation_sum[idx];
+                const rainVal = isCheckCategory ? Math.max(...(d.precipitation_sum || [0]).slice(0, 8)) : (d.precipitation_sum[idx] || 0);
                 msg = msg.replace("{rain}", Math.round(rainVal));
             }
-            if (msg.includes("{soil_temp}")) msg = msg.replace("{soil_temp}", d.soil_temperature_6cm[idx] !== null ? Math.round(d.soil_temperature_6cm[idx]) : "--");
-            if (msg.includes("{uv}")) msg = msg.replace("{uv}", d.uv_index_max[idx] !== null ? d.uv_index_max[idx].toFixed(1) : "--");
+            if (msg.includes("{soil_temp}")) msg = msg.replace("{soil_temp}", d.soil_temperature_6cm && d.soil_temperature_6cm[idx] !== null ? Math.round(d.soil_temperature_6cm[idx]) : "--");
+            if (msg.includes("{uv}")) msg = msg.replace("{uv}", d.uv_index_max && d.uv_index_max[idx] !== null ? d.uv_index_max[idx].toFixed(1) : "--");
             if (msg.includes("{days}")) msg = msg.replace("{days}", dryDays);
             
             if (msg.includes("{next_rain}")) {
-                const rIdx = d.precipitation_sum.slice(7).findIndex(r => r >= 1);
+                const rIdx = d.precipitation_sum ? d.precipitation_sum.slice(7).findIndex(r => r >= 1) : -1;
                 if (rIdx !== -1) {
                     const rainDate = new Date(d.time[rIdx + 7]);
-                    msg = msg.replace("{next_rain}", rIdx === 0 ? "Ma esik!" : `Eső: ${rainDate.toLocaleDateString('hu-HU',{weekday:'long'})} (${Math.round(d.precipitation_sum[rIdx + 7])}mm).`);
-                } else msg = msg.replace("{next_rain}", "Nincs eső a láthatáron.");
+                    msg = msg.replace("{next_rain}", rIdx === 0 ? "Ma esik!" : `Eső: ${rainDate.toLocaleDateString('hu-HU',{weekday:'long'})}.`);
+                } else msg = msg.replace("{next_rain}", "Nincs eső.");
             }
         } catch(e) { console.warn("Msg error", e); }
         return msg.split(/([.!?])\s+/).map((s, i, a) => (i % 2 === 0 && s) ? `<span style="display:block; margin-bottom:5px;">${s}${a[i+1] || ""}</span>` : "").join('');
@@ -86,20 +86,23 @@
 
     function checkCondition(weather, idx, key, val, dryDays) {
         const d = weather.daily;
-        if (key.includes('temp_max_below')) return d.temperature_2m_max[idx] <= val;
-        if (key.includes('temp_min_below') || key.includes('temp_below')) return d.temperature_2m_min[idx] <= val;
-        if (key.includes('temp_min_above')) return d.temperature_2m_min[idx] >= val;
-        if (key.includes('temp_above')) return d.temperature_2m_max[idx] >= val;
-        if (key.includes('soil_temp_above')) return d.soil_temperature_6cm[idx] !== null && d.soil_temperature_6cm[idx] >= val;
-        if (key.includes('soil_temp_below')) return d.soil_temperature_6cm[idx] !== null && d.soil_temperature_6cm[idx] <= val;
-        if (key.includes('rain_min')) return d.precipitation_sum[idx] >= val;
-        if (key.includes('rain_max')) return d.precipitation_sum[idx] <= Math.max(val, RAIN_NONE);
-        if (key.includes('wind_gusts_min')) return d.wind_gusts_10m_max[idx] >= val;
-        if (key.includes('snow_min')) return d.snowfall_sum[idx] >= val;
-        if (key.includes('snow_max')) return d.snowfall_sum[idx] <= val;
-        if (key.includes('uv_above')) return d.uv_index_max[idx] !== null && d.uv_index_max[idx] >= val;
-        if (key === 'days_min') return dryDays >= val;
-        if (key === 'days_max') return dryDays <= val;
+        if (!d) return false;
+        try {
+            if (key.includes('temp_max_below')) return d.temperature_2m_max[idx] <= val;
+            if (key.includes('temp_min_below') || key.includes('temp_below')) return d.temperature_2m_min[idx] <= val;
+            if (key.includes('temp_min_above')) return d.temperature_2m_min[idx] >= val;
+            if (key.includes('temp_above')) return d.temperature_2m_max[idx] >= val;
+            if (key.includes('soil_temp_above')) return d.soil_temperature_6cm && d.soil_temperature_6cm[idx] >= val;
+            if (key.includes('soil_temp_below')) return d.soil_temperature_6cm && d.soil_temperature_6cm[idx] <= val;
+            if (key.includes('rain_min')) return d.precipitation_sum[idx] >= val;
+            if (key.includes('rain_max')) return d.precipitation_sum[idx] <= Math.max(val, RAIN_NONE);
+            if (key.includes('wind_gusts_min')) return d.wind_gusts_10m_max[idx] >= val;
+            if (key.includes('snow_min')) return d.snowfall_sum[idx] >= val;
+            if (key.includes('snow_max')) return d.snowfall_sum[idx] <= val;
+            if (key.includes('uv_above')) return d.uv_index_max && d.uv_index_max[idx] >= val;
+            if (key === 'days_min') return dryDays >= val;
+            if (key === 'days_max') return dryDays <= val;
+        } catch(e) { return false; }
         return true;
     }
 
@@ -154,27 +157,21 @@
             }
 
             if (!weather) {
-                const params = [
-                    `latitude=${lat}`, `longitude=${lon}`,
-                    'daily=temperature_2m_max,temperature_2m_min,precipitation_sum,snowfall_sum,wind_gusts_10m_max,soil_temperature_6cm,uv_index_max,precipitation_probability_max',
-                    'past_days=7', 'timezone=auto'
-                ].join('&');
-                const resp = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`);
+                // JAVÍTOTT PARAMÉTEREK: Vesszővel elválasztott lista, pontos nevekkel
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,snowfall_sum,wind_gusts_10m_max,soil_temperature_6cm,uv_index_max,precipitation_probability_max&past_days=7&timezone=auto`;
+                
+                const resp = await fetch(url);
                 if (!resp.ok) {
-                    const errInfo = await resp.json();
-                    console.error("OPEN-METEO HIBA:", errInfo.reason || "Ismeretlen hiba");
-                    throw new Error(errInfo.reason || "API hiba");
+                    const err = await resp.json();
+                    throw new Error(err.reason || "Open-Meteo hiba");
                 }
                 weather = await resp.json();
                 safeStorage.setItem('garden-weather-cache', JSON.stringify({ version: CACHE_VERSION, ts: Date.now(), data: weather }));
             }
 
             const daily = weather.daily;
-            for (let i = 0; i <= 7; i++) {
-                if (daily.precipitation_sum[i] >= RAIN_THRESHOLD) safeStorage.setItem('last_rain_date', daily.time[i]);
-            }
-            const lastRain = safeStorage.getItem('last_rain_date');
-            const dryDays = lastRain ? Math.floor(Math.abs(new Date() - new Date(lastRain)) / 86400000) : 0;
+            const lastRain = safeStorage.getItem('last_rain_date') || daily.time[0];
+            const dryDays = Math.floor(Math.abs(new Date() - new Date(lastRain)) / 86400000);
 
             const rules = await (await fetch('https://raw.githack.com/amezitlabaskert-lab/kertfigyelo/main/kertfigyelo_esemenyek.json?v=' + Date.now())).json();
             const rawResults = [];
@@ -227,8 +224,8 @@
             setup('alert', alerts.length); setup('tasks', others.length);
 
         } catch(e) { 
-            console.error(e); 
-            widgetDiv.innerHTML = `<div style="padding:20px;text-align:center;">Hiba: ${e.message}<br><button onclick="localStorage.clear();location.reload();">Újratöltés</button></div>`;
+            console.error("KRITIKUS HIBA:", e); 
+            widgetDiv.innerHTML = `<div style="padding:20px;text-align:center;">Hiba: ${e.message}<br><button onclick="localStorage.clear();location.reload();">Cache törlése és újra</button></div>`;
         }
     }
 
