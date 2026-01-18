@@ -1,5 +1,5 @@
 (async function() {
-    const CACHE_VERSION = 'v6.3.9'; 
+    const CACHE_VERSION = 'v6.3.10'; 
     const RAIN_THRESHOLD = 8;
     const RAIN_NONE = 0.8; 
 
@@ -63,14 +63,24 @@
             const d = weather.daily;
             const idx = (targetIdx !== undefined) ? targetIdx : 7;
             
+            // Érték cserék
             if (msg.includes("{temp}")) msg = msg.replace("{temp}", Math.round(d.temperature_2m_min[idx]));
             if (msg.includes("{wind}")) msg = msg.replace("{wind}", Math.round(d.wind_gusts_10m_max[idx]));
-            if (msg.includes("{rain}")) {
-                const rainVal = isCheckCategory ? Math.max(...(d.precipitation_sum || [0]).slice(0, 8)) : (d.precipitation_sum[idx] || 0);
-                msg = msg.replace("{rain}", Math.round(rainVal));
+            if (msg.includes("{rain}")) msg = msg.replace("{rain}", Math.round(d.precipitation_sum[idx] || 0));
+            if (msg.includes("{soil_temp}")) msg = msg.replace("{soil_temp}", d.soil_temperature_6cm && d.soil_temperature_6cm[idx] ? Math.round(d.soil_temperature_6cm[idx]) : "--");
+            if (msg.includes("{uv}")) msg = msg.replace("{uv}", d.uv_index_max && d.uv_index_max[idx] ? d.uv_index_max[idx].toFixed(1) : "--");
+            if (msg.includes("{rain_prob}")) msg = msg.replace("{rain_prob}", d.precipitation_probability_max ? d.precipitation_probability_max[idx] : "--");
+            
+            // Trendek és speciálisak
+            if (msg.includes("{temp_trend}")) {
+                const diff = d.temperature_2m_min[idx] - d.temperature_2m_min[idx-1];
+                const trend = diff <= -2 ? " (erősen hűl)" : (diff >= 2 ? " (enyhül)" : "");
+                msg = msg.replace("{temp_trend}", trend);
             }
-            if (msg.includes("{soil_temp}")) msg = msg.replace("{soil_temp}", d.soil_temperature_6cm && d.soil_temperature_6cm[idx] !== null ? Math.round(d.soil_temperature_6cm[idx]) : "--");
-            if (msg.includes("{uv}")) msg = msg.replace("{uv}", d.uv_index_max && d.uv_index_max[idx] !== null ? d.uv_index_max[idx].toFixed(1) : "--");
+            if (msg.includes("{snow}")) {
+                const snowVal = Math.max(...(d.snowfall_sum || [0]).slice(idx-3, idx+1));
+                msg = msg.replace("{snow}", Math.round(snowVal));
+            }
             if (msg.includes("{days}")) msg = msg.replace("{days}", dryDays);
             
             if (msg.includes("{next_rain}")) {
@@ -119,7 +129,7 @@
             }
         }
         if (rule.category === 'check') {
-            for (let i = 0; i <= 1; i++) {
+            for (let i = 0; i <= 2; i++) {
                 const cIdx = dayIdx - i;
                 if (cIdx < 0) continue;
                 let match = true;
@@ -132,7 +142,6 @@
             return false;
         }
         const days = (cond.days_min && !cond.temp_above) ? 1 : (cond.days_min || 1);
-        if (dayIdx < days - 1) return false;
         for (const key in cond) {
             if (key === 'days_min' || key === 'days_max' || key.endsWith('_any')) continue; 
             for (let j = 0; j < days; j++) if (!checkCondition(weather, dayIdx - j, key, cond[key], dryDays)) return false;
@@ -157,23 +166,13 @@
             }
 
             if (!weather) {
-                // HYBRID URL: soil_temperature_6cm az hourly listába került!
                 const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,snowfall_sum,wind_gusts_10m_max,uv_index_max,precipitation_probability_max&hourly=soil_temperature_6cm&past_days=7&timezone=auto`;
-                
                 const resp = await fetch(url);
-                if (!resp.ok) {
-                    const err = await resp.json();
-                    throw new Error(err.reason || "Open-Meteo hiba");
-                }
                 const rawData = await resp.json();
-
-                // Adat-transzformáció: Hourly -> Daily (minden nap déli értékét vesszük)
                 rawData.daily.soil_temperature_6cm = [];
                 for (let i = 0; i < rawData.daily.time.length; i++) {
-                    const hourIdx = i * 24 + 12; // A nap 12:00 órája
-                    rawData.daily.soil_temperature_6cm.push(rawData.hourly.soil_temperature_6cm[hourIdx] ?? null);
+                    rawData.daily.soil_temperature_6cm.push(rawData.hourly.soil_temperature_6cm[i * 24 + 12] ?? null);
                 }
-
                 weather = rawData;
                 safeStorage.setItem('garden-weather-cache', JSON.stringify({ version: CACHE_VERSION, ts: Date.now(), data: weather }));
             }
@@ -188,14 +187,9 @@
             rules.forEach(rule => {
                 let range = null, tIdx = null; 
                 for (let i = 7; i < daily.time.length; i++) {
-                    const d = new Date(daily.time[i]);
-                    const inSeason = !rule.seasons || rule.seasons.some(s => {
-                        const [sM, sD] = s.start.split('-').map(Number), [eM, eD] = s.end.split('-').map(Number);
-                        const sDate = new Date(d.getFullYear(), sM-1, sD), eDate = new Date(d.getFullYear(), eM-1, eD);
-                        return eDate < sDate ? (d >= sDate || d <= eDate) : (d >= sDate && d <= eDate);
-                    });
-                    if (inSeason && checkSustained(weather, i, rule, dryDays)) {
-                        if (!range) { range = { start: d, end: d }; tIdx = i; } else range.end = d;
+                    if (checkSustained(weather, i, rule, dryDays)) {
+                        if (!range) { range = { start: new Date(daily.time[i]), end: new Date(daily.time[i]) }; tIdx = i; }
+                        else range.end = new Date(daily.time[i]);
                     } else if (range) break;
                 }
                 if (range) rawResults.push({ ...rule, start: range.start, end: range.end, targetIdx: tIdx });
@@ -229,12 +223,12 @@
                 if (isPers) { ['garden-lat','garden-lon','garden-weather-cache','last_rain_date'].forEach(k => safeStorage.removeItem(k)); location.reload(); }
                 else { navigator.geolocation.getCurrentPosition(p => { safeStorage.setItem('garden-lat', p.coords.latitude); safeStorage.setItem('garden-lon', p.coords.longitude); safeStorage.removeItem('garden-weather-cache'); location.reload(); }); }
             };
-            const setup = (id, len) => { if (len <= 1) return; const items = document.querySelectorAll(`#${id}-carousel .carousel-item`); let i = 0; setInterval(() => { items[i].classList.remove('active'); i = (i + 1) % len; items[i].classList.add('active'); }, 8000); };
+            const setup = (id, len) => { if (len <= 1) return; const items = document.querySelectorAll(`#${id}-carousel .carousel-item`); let i = 0; setInterval(() => { if(items[i]) items[i].classList.remove('active'); i = (i + 1) % len; if(items[i]) items[i].classList.add('active'); }, 8000); };
             setup('alert', alerts.length); setup('tasks', others.length);
 
         } catch(e) { 
-            console.error("KRITIKUS HIBA:", e); 
-            widgetDiv.innerHTML = `<div style="padding:20px;text-align:center;">Hiba: ${e.message}<br><button onclick="localStorage.clear();location.reload();">Cache törlése és újra</button></div>`;
+            console.error(e); 
+            widgetDiv.innerHTML = `<div style="padding:20px;text-align:center;">Betöltés...<br><button onclick="localStorage.clear();location.reload();">Frissítés</button></div>`;
         }
     }
 
