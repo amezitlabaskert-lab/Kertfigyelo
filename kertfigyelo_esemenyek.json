@@ -6,7 +6,7 @@
     "type": "alert",
     "category": "weather",
     "conditions": { "wind_gusts_min": 50 },
-    "message": "Erős, {wind} km/h-ás széllökések várhatók. Rögzítsd a kerti eszközöket és a napernyőket!"
+    "message": "Erős, {wind} km/h-ás széllökések várhatók{wind_trend}. Rögzítsd a kerti eszközöket és a napernyőket!"
   },
   {
     "_comment": "2.",
@@ -15,7 +15,7 @@
     "type": "alert",
     "category": "weather",
     "conditions": { "rain_min": 15 },
-    "message": "Intenzív esőzés ({rain} mm) várható rövid idő alatt. Ellenőrizd a vízelvezetőket!"
+    "message": "Intenzív esőzés várható rövid idő alatt! Akár {rain} mm is eshet{rain_trend}. Ellenőrizd a vízelvezetőket!"
   },
   {
     "_comment": "3.",
@@ -27,7 +27,7 @@
     "category": "weather",
     "seasons": [ { "start": "10-15", "end": "04-15" } ],
     "conditions": { "temp_min_below": -5 },
-    "message": "Beköszöntött a csípős idő! Éjszaka -5°C köré hűl a levegő."
+    "message": "Beköszöntött a csípős idő! Éjszaka {temp}°C köré hűl a levegő{temp_trend}."
   },
   {
     "_comment": "4.",
@@ -39,7 +39,7 @@
     "category": "weather",
     "seasons": [ { "start": "11-01", "end": "03-15" } ],
     "conditions": { "temp_min_below": -10 },
-    "message": "Erős fagyok várhatók ({temp}°C)! Ellenőrizd az érzékenyebb növények takarását!"
+    "message": "Erős fagyok várhatók ({temp}°C){temp_trend}! Ellenőrizd az érzékenyebb növények takarását!"
   },
   {
     "_comment": "5.",
@@ -53,6 +53,7 @@
     "message": "Téli aszály: nincs hó, tartós a fagy és szeles az idő. Fagymentes időben öntözd meg az örökzöldeket!"
   },
   {
+    "_comment": "6.",
     "id": "nyari-aszaly-pro",
     "name": "🔥 Aszályriadó",
     "type": "alert",
@@ -60,11 +61,7 @@
     "priority": 10,
     "category": "weather",
     "seasons": [ { "start": "06-01", "end": "08-31" } ],
-    "conditions": { 
-      "temp_above": 28, 
-      "rain_max": 7.9, 
-      "days_min": 7 
-    },
+    "conditions": { "temp_above": 28, "rain_max": 7.9, "days_min": 7 },
     "message": "Már {days} napja nem esett érdemi eső. A növényeknek most mélyöntözésre van szükségük! {next_rain}"
   },
   {
@@ -84,7 +81,7 @@
     "type": "alert",
     "category": "weather",
     "conditions": { "snow_min_any": 5 },
-    "message": "Jelentős friss hó esett ({snow} cm)! Rázd le a havat az örökzöldekről, mielőtt letörnek az ágak!"
+    "message": "Jelentős friss hó esett ({snow} cm){snow_trend}! Rázd le a havat az örökzöldekről, mielőtt letörnek az ágak!"
   },
   {
     "_comment": "9.",
@@ -253,7 +250,7 @@
     "category": "weather",
     "seasons": [ { "start": "03-01", "end": "05-15" } ],
     "conditions": { "temp_above": 8, "rain_max": 0 },
-    "message": "Tavaszi, nitrogénbombás indító trágyázás: száraz fűre szórd ki, majd utána alaposan öntözd be a területet!"
+    "message": "Tavaszi, nitrogénbombás indító trágyázás: száraz fűre szórd ki, majd utána alaposan öntözd be!"
   },
   {
     "_comment": "24.",
@@ -265,7 +262,7 @@
     "category": "weather",
     "seasons": [ { "start": "06-01", "end": "08-15" } ],
     "conditions": { "temp_above": 20, "rain_max": 0 },
-    "message": "Nyári, káliumtúlsúlyos, stresszkezelő tápanyag: száraz fűre szórd ki, majd utána alaposan öntözd be a területet!"
+    "message": "Nyári, káliumtúlsúlyos, stresszkezelő tápanyag: száraz fűre szórd ki, majd utána alaposan öntözd be!"
   },
   {
     "_comment": "25.",
@@ -286,7 +283,7 @@
     "type": "info",
     "category": "check",
     "conditions": { "snow_min_any": 1 },
-    "message": "Hó esett a közelmúltban. Ellenőrizd a növényeket hónyomás miatt!"
+    "message": "Hó esett a közelmúltban ({snow} cm). Ellenőrizd a növényeket hónyomás miatt!"
   },
   {
     "_comment": "27.",
@@ -295,7 +292,7 @@
     "type": "info",
     "category": "check",
     "conditions": { "rain_min_any": 15 },
-    "message": "Jelentős eső esett az elmúlt napokban. Ellenőrizd a vízelvezetést!"
+    "message": "Jelentős eső esett az elmúlt napokban ({rain} mm). Ellenőrizd a vízelvezetést!"
   },
   {
     "_comment": "28.",
@@ -304,7 +301,7 @@
     "type": "info",
     "category": "check",
     "conditions": { "wind_gusts_min_any": 45 },
-    "message": "Erős széllökések voltak az elmúlt napokban. Nézz rá a támrendszerekre!"
+    "message": "Erős széllökések voltak az elmúlt napokban ({wind} km/h). Nézz rá a támrendszerekre!"
   },
   {
     "_comment": "29.",
@@ -353,9 +350,3 @@
     "message": "Tökéletes, szélcsendes este a kerti kikapcsolódáshoz. Élvezd a kerted gyümölcsét!"
   }
 ]
-
-
-
-
-
-
